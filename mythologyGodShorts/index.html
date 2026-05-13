@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0c0e14" />
+    <title>Mythology — mobile prompts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Mythology shorts</h1>
+      <p>Build prompts, copy, paste into Grok</p>
+    </header>
+
+    <main>
+      <!-- Panel 1 -->
+      <section class="panel" aria-labelledby="p1-title">
+        <div class="panel-head">
+          <div class="panel-num" aria-hidden="true">1</div>
+          <div class="panel-title">
+            <h2 id="p1-title">Figures</h2>
+            <span>Grassland look-lock</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="character-rows" class="character-rows"></div>
+          <button type="button" class="btn-add" id="btn-add-character">+ Add figure</button>
+          <div class="field" id="field-p1-notes" hidden>
+            <div class="label-row">
+              <label for="p1-optional-notes">Optional notes</label>
+              <button
+                type="button"
+                class="hint-icon"
+                id="hint-p1-notes"
+                title="Merged into the Prompt 1 paragraph only when exactly one figure is selected. English keywords for jewellery, palette, mood."
+                aria-label="Help: optional notes for single figure"
+              >
+                ?
+              </button>
+            </div>
+            <textarea id="p1-optional-notes" rows="3" placeholder="" autocomplete="off"></textarea>
+          </div>
+          <button type="button" class="btn-copy" id="copy-p1">Copy prompt</button>
+        </div>
+      </section>
+
+      <!-- Panel 2 -->
+      <section class="panel" aria-labelledby="p2-title">
+        <div class="panel-head">
+          <div class="panel-num" aria-hidden="true">2</div>
+          <div class="panel-title">
+            <h2 id="p2-title">Place</h2>
+            <span>Setting look-lock</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="row-grid two">
+            <div class="field">
+              <label for="bg-select">Background</label>
+              <select id="bg-select"></select>
+            </div>
+            <div class="field">
+              <label for="bg-version-select">Version</label>
+              <select id="bg-version-select"></select>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label-row">
+              <label for="bg-lock">Lock text</label>
+              <button
+                type="button"
+                class="hint-icon"
+                title="What appears on screen for this place. Fills from the catalog when you change version; you can edit before copy."
+                aria-label="Help: background lock text"
+              >
+                ?
+              </button>
+            </div>
+            <textarea id="bg-lock" rows="5" autocomplete="off"></textarea>
+          </div>
+          <div class="field">
+            <div class="label-row">
+              <label for="bg-optional-notes">Optional notes</label>
+              <button
+                type="button"
+                class="hint-icon"
+                title="Extra English keywords for weather, palette, scale. Appended to the Prompt 2 paragraph."
+                aria-label="Help: optional background notes"
+              >
+                ?
+              </button>
+            </div>
+            <textarea id="bg-optional-notes" rows="2" autocomplete="off"></textarea>
+          </div>
+          <button type="button" class="btn-copy" id="copy-p2">Copy prompt</button>
+        </div>
+      </section>
+
+      <!-- Panel 3 -->
+      <section class="panel" aria-labelledby="p3-title">
+        <div class="panel-head">
+          <div class="panel-num" aria-hidden="true">3</div>
+          <div class="panel-title">
+            <h2 id="p3-title">Video vibe</h2>
+            <span>Locks + scene recipe</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="row-grid two">
+            <div class="field">
+              <label for="p3-performance">Motion</label>
+              <select id="p3-performance">
+                <option value="none" selected>None</option>
+                <option value="standing_calm">Standing calm</option>
+                <option value="slow_ritual">Slow ritual</option>
+                <option value="slow_walk">Slow walk</option>
+                <option value="meditating">Meditating</option>
+                <option value="blessing_gesture">Blessing gesture</option>
+                <option value="running_striding">Running / striding</option>
+                <option value="hero_stance">Hero stance</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="p3-atmosphere">Light &amp; air</label>
+              <select id="p3-atmosphere">
+                <option value="none" selected>None</option>
+                <option value="soft_daylight">Soft daylight</option>
+                <option value="golden_hour">Golden hour</option>
+                <option value="overcast_soft">Overcast soft</option>
+                <option value="moonlit_night">Moonlit night</option>
+                <option value="mist_fog">Mist / fog</option>
+                <option value="harsh_sun">Harsh sun</option>
+                <option value="high_altitude_crisp">High altitude crisp</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label-row">
+              <span style="margin-bottom: 0">Camera angles</span>
+              <button
+                type="button"
+                class="hint-icon"
+                title="Add one or more angles. Multiple angles produce a multi-scene ChatGPT instruction (Scene 1, Scene 2, …). Remove with ×."
+                aria-label="Help: camera angles"
+              >
+                ?
+              </button>
+            </div>
+            <input type="hidden" id="cam-keys" value='["default_framing"]' autocomplete="off" />
+            <div id="cam-chips" class="chip-row" role="list"></div>
+            <div class="camera-add-row">
+              <select id="cam-add" aria-label="Add camera angle">
+                <option value="">Add angle…</option>
+                <option value="default_framing">Default framing</option>
+                <option value="full_body_front">Full body front</option>
+                <option value="wide_establishing">Wide establishing</option>
+                <option value="waist_up">Waist-up</option>
+                <option value="close_face_hands">Close face &amp; hands</option>
+                <option value="low_angle">Low angle</option>
+                <option value="high_angle">High angle</option>
+                <option value="static_tripod">Static tripod</option>
+                <option value="slow_push_in">Slow push-in</option>
+                <option value="slow_drift_pan">Slow drift / pan</option>
+                <option value="aerial_top_zoom_10">Aerial top ~10%</option>
+                <option value="aerial_top_zoom_25">Aerial top ~25%</option>
+                <option value="aerial_25deg_from_top_zoom_25">25° from top ~25%</option>
+                <option value="aerial_25deg_from_top_zoom_50">25° from top ~50%</option>
+                <option value="aerial_50deg_from_top_zoom_50">50° from top ~50%</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="p3-constraints">Rules</label>
+            <select id="p3-constraints">
+              <option value="none" selected>None</option>
+              <option value="single_action">Single primary action</option>
+              <option value="no_subtitles">No subtitles / on-screen text</option>
+              <option value="no_dialogue">No spoken dialogue</option>
+              <option value="match_locks">Match locks exactly</option>
+              <option value="one_figure_only">One figure only</option>
+              <option value="wardrobe_consistency">Wardrobe consistency</option>
+              <option value="short_single_beat">Short single beat</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="label-row">
+              <span style="margin-bottom: 0">Mood tags</span>
+              <button
+                type="button"
+                class="hint-icon"
+                title="Optional emotional emphasis for the merged prompt. Add several or none."
+                aria-label="Help: mood tags"
+              >
+                ?
+              </button>
+            </div>
+            <input type="hidden" id="mood-keys" value="[]" autocomplete="off" />
+            <div id="mood-chips" class="chip-row" role="list"></div>
+            <div class="mood-add-row">
+              <select id="mood-add" aria-label="Add mood">
+                <option value="">Add mood…</option>
+                <option value="bhakti">Bhakti</option>
+                <option value="courage">Courage</option>
+                <option value="peace">Peace</option>
+                <option value="awe">Awe</option>
+                <option value="wrath">Wrath</option>
+                <option value="compassion">Compassion</option>
+                <option value="mystery">Mystery</option>
+                <option value="triumph">Triumph</option>
+                <option value="melancholy">Melancholy</option>
+                <option value="festive">Festive</option>
+                <option value="serenity">Serenity</option>
+                <option value="power">Power</option>
+              </select>
+            </div>
+          </div>
+          <div class="row-grid two">
+            <div class="field">
+              <label for="video-main">Look — main</label>
+              <select id="video-main"></select>
+            </div>
+            <div class="field">
+              <label for="video-sub">Look — sub</label>
+              <select id="video-sub"></select>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label-row">
+              <label for="p3-priority">Scene beats</label>
+              <button
+                type="button"
+                class="hint-icon"
+                title="Short lines for action and staging. Highest priority in the merged prompt when they conflict with dropdowns."
+                aria-label="Help: scene beats"
+              >
+                ?
+              </button>
+            </div>
+            <div class="field nested-field">
+              <label for="priority-saved-select">Saved preset</label>
+              <select id="priority-saved-select" aria-label="Load a saved scene beats preset">
+                <option value="">Saved preset…</option>
+              </select>
+            </div>
+            <div id="priority-examples-row" class="priority-examples-row" aria-label="Quick scene beat examples"></div>
+            <textarea id="p3-priority" rows="4" autocomplete="off" placeholder=""></textarea>
+          </div>
+          <button type="button" class="btn-copy" id="copy-p3">Copy prompt</button>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="catalog.js"></script>
+    <script src="prompt-engine.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,178 @@
+{
+  "gods": [
+    {
+      "id": "shiva",
+      "label": "Shiva",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - basic",
+          "characterBrief": "[Shiva] : divine male deity, serene meditative presence; ash-smeared skin; third eye closed or softly lit; matted hair with Ganga; serpent ornaments; rudraksha; minimal sacred attire; calm transcendent bearing.",
+          "videoLock": "[Shiva] : divine male deity, serene meditative presence; ash-smeared skin; third eye closed or softly lit; matted hair with Ganga; serpent ornaments; rudraksha; minimal sacred attire; calm transcendent bearing."
+        },
+        {
+          "id": "version2",
+          "label": "version2 - cosmic ascetic",
+          "characterBrief": "[Shiva] : cosmic ascetic male; blue-grey skin (Neelkanth); crescent moon in hair; damru and trishul visible when relevant; tiger or deer skin drape; storm-lightning aura optional; still immense presence.",
+          "videoLock": "[Shiva] : cosmic ascetic male; blue-grey skin (Neelkanth); crescent moon in hair; damru and trishul visible when relevant; tiger or deer skin drape; storm-lightning aura optional; still immense presence."
+        },
+        {
+          "id": "version3",
+          "label": "version3 - seated blessing",
+          "characterBrief": "[Shiva] : seated or standing blessing posture; gentle abhaya mudra; soft ash markings; composed eyes; flowing minimal fabric; sacred calm without theatrical rage.",
+          "videoLock": "[Shiva] : seated or standing blessing posture; gentle abhaya mudra; soft ash markings; composed eyes; flowing minimal fabric; sacred calm without theatrical rage."
+        }
+      ]
+    },
+    {
+      "id": "nandi",
+      "label": "Nandi",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - sacred bull",
+          "characterBrief": "[Nandi] : large sacred bull (Nandi); pale or white coat; strong hump; gentle devoted eyes; bell and flower garlands optional; bovine anatomy only—no anthropomorphic deity face; calm strength beside Mahadev.",
+          "videoLock": "[Nandi] : large sacred bull (Nandi); pale or white coat; strong hump; gentle devoted eyes; bell and flower garlands optional; bovine anatomy only—no anthropomorphic deity face; calm strength beside Mahadev."
+        },
+        {
+          "id": "version2",
+          "label": "version2 - decorated mount",
+          "characterBrief": "[Nandi] : richly decorated mount; vermilion and sandalwood marks; cloth over back; brass bell; regal but gentle; clear separation from human-form deities.",
+          "videoLock": "[Nandi] : richly decorated mount; vermilion and sandalwood marks; cloth over back; brass bell; regal but gentle; clear separation from human-form deities."
+        }
+      ]
+    },
+    {
+      "id": "krishna",
+      "label": "Krishna",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - youthful flute",
+          "characterBrief": "[Krishna] : divine youth; peacock feather crown; warm luminous skin; gentle smile; bansuri (flute) when relevant; yellow or gold dhoti; soft pastoral divine charm; serene profile readable.",
+          "videoLock": "[Krishna] : divine youth; peacock feather crown; warm luminous skin; gentle smile; bansuri (flute) when relevant; yellow or gold dhoti; soft pastoral divine charm; serene profile readable."
+        },
+        {
+          "id": "version2",
+          "label": "version2 - royal counsel",
+          "characterBrief": "[Krishna] : regal bearing; jewelled crown; silk angavastram; discus hint optional; composed adult divine presence; wise calm eyes.",
+          "videoLock": "[Krishna] : regal bearing; jewelled crown; silk angavastram; discus hint optional; composed adult divine presence; wise calm eyes."
+        }
+      ]
+    },
+    {
+      "id": "hanuman",
+      "label": "Hanuman",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - flying warrior",
+          "characterBrief": "[Hanuman] : divine monkey-faced warrior; noble simian features with human-like dignity; muscular build; gada (mace) visible; short controlled facial fur; saffron or red dhoti; tail disciplined; golden-red aura optional; devotional courage.",
+          "videoLock": "[Hanuman] : divine monkey-faced warrior; noble simian features with human-like dignity; muscular build; gada (mace) visible; short controlled facial fur; saffron or red dhoti; tail disciplined; golden-red aura optional; devotional courage."
+        },
+        {
+          "id": "version2",
+          "label": "version2 - kneeling devotion",
+          "characterBrief": "[Hanuman] : kneeling or standing devotion; folded hands; softer gaze; gada resting; humble strength; warm earth tones.",
+          "videoLock": "[Hanuman] : kneeling or standing devotion; folded hands; softer gaze; gada resting; humble strength; warm earth tones."
+        }
+      ]
+    },
+    {
+      "id": "ganesha",
+      "label": "Ganesha",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - blessing",
+          "characterBrief": "[Ganesha] : elephant-headed deity; kind intelligent eyes; modak or plate optional; silk dhoti; ornate crown; rounded divine proportions; warm lamp-friendly skin tones; gentle blessing mudra.",
+          "videoLock": "[Ganesha] : elephant-headed deity; kind intelligent eyes; modak or plate optional; silk dhoti; ornate crown; rounded divine proportions; warm lamp-friendly skin tones; gentle blessing mudra."
+        },
+        {
+          "id": "version2",
+          "label": "version2 - festive",
+          "characterBrief": "[Ganesha] : festive adornment; flower garlands; gold ornaments; joyful calm expression; rich reds and golds; celebratory but dignified.",
+          "videoLock": "[Ganesha] : festive adornment; flower garlands; gold ornaments; joyful calm expression; rich reds and golds; celebratory but dignified."
+        }
+      ]
+    },
+    {
+      "id": "durga",
+      "label": "Durga",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - lion mount",
+          "characterBrief": "[Durga] : warrior goddess; multiple arms when depicted; trident and bow hints optional; fierce-calm expression; lion as mount or beside; rich saree and armour jewellery; strong silhouette against sky.",
+          "videoLock": "[Durga] : warrior goddess; multiple arms when depicted; trident and bow hints optional; fierce-calm expression; lion as mount or beside; rich saree and armour jewellery; strong silhouette against sky."
+        },
+        {
+          "id": "version2",
+          "label": "version2 - serene power",
+          "characterBrief": "[Durga] : composed victorious stance; softer jewellery; lion at rest; controlled radiance; protective mother-energy without losing strength.",
+          "videoLock": "[Durga] : composed victorious stance; softer jewellery; lion at rest; controlled radiance; protective mother-energy without losing strength."
+        }
+      ]
+    },
+    {
+      "id": "parvati",
+      "label": "Parvati",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - gentle queen",
+          "characterBrief": "[Parvati] : divine queenly presence; warm luminous skin; refined sari; graceful jewellery; bindi or tilak; compassionate eyes; serene strength beside Shiva when paired.",
+          "videoLock": "[Parvati] : divine queenly presence; warm luminous skin; refined sari; graceful jewellery; bindi or tilak; compassionate eyes; serene strength beside Shiva when paired."
+        }
+      ]
+    },
+    {
+      "id": "ram",
+      "label": "Ram",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - dharmic prince",
+          "characterBrief": "[Ram] : dharmic prince; tall composed build; vertical tilak; simple forest or royal attire per scene; bow optional; calm righteous bearing; warm skin undertone.",
+          "videoLock": "[Ram] : dharmic prince; tall composed build; vertical tilak; simple forest or royal attire per scene; bow optional; calm righteous bearing; warm skin undertone."
+        }
+      ]
+    },
+    {
+      "id": "sita",
+      "label": "Sita",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - forest grace",
+          "characterBrief": "[Sita] : dignified queen in modest forest exile; simple sari; graceful posture; calm compassionate eyes; minimal jewellery; warm natural skin tone; serene strength beside Ram when paired.",
+          "videoLock": "[Sita] : dignified queen in modest forest exile; simple sari; graceful posture; calm compassionate eyes; minimal jewellery; warm natural skin tone; serene strength beside Ram when paired."
+        }
+      ]
+    },
+    {
+      "id": "kartikeya",
+      "label": "Kartikeya",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - youthful commander",
+          "characterBrief": "[Kartikeya] : divine youth commander; spear (vel) optional; minimal crown; confident calm stance; radiant warrior grace without brutality.",
+          "videoLock": "[Kartikeya] : divine youth commander; spear (vel) optional; minimal crown; confident calm stance; radiant warrior grace without brutality."
+        }
+      ]
+    },
+    {
+      "id": "lakshmi",
+      "label": "Lakshmi",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - lotus grace",
+          "characterBrief": "[Lakshmi] : goddess of fortune; lotus motifs; gold and vermillion palette; serene benevolent smile; refined ornaments; seated or standing grace; warm soft light on skin.",
+          "videoLock": "[Lakshmi] : goddess of fortune; lotus motifs; gold and vermillion palette; serene benevolent smile; refined ornaments; seated or standing grace; warm soft light on skin."
+        }
+      ]
+    }
+  ]
+}

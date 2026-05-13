@@ -1,0 +1,118 @@
+{
+  "backgrounds": [
+    {
+      "id": "kailash",
+      "label": "Kailash",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version 1 - basic",
+          "characterBrief": "[Kailash] : snow-capped sacred peaks, crisp high-altitude light, quiet vast scale, cold clear air, prayer-flag hints optional, rocky foreground.",
+          "videoLock": "[Kailash] : snow-capped sacred peaks, crisp high-altitude light, quiet vast scale, cold clear air, prayer-flag hints optional, rocky foreground."
+        },
+        {
+          "id": "version2",
+          "label": "version2 - storm summit",
+          "characterBrief": "[Kailash] : approaching storm over peaks; dramatic cloud banks; first snow streaks on ridges; wind across stone; electric tension in sky; still sacred scale.",
+          "videoLock": "[Kailash] : approaching storm over peaks; dramatic cloud banks; first snow streaks on ridges; wind across stone; electric tension in sky; still sacred scale."
+        },
+        {
+          "id": "version3",
+          "label": "version3 - dawn ridge",
+          "characterBrief": "[Kailash] : first light on eastern ridges; rose and gold on snow; long shadows; thin cold air; distant summit glow; silence and immensity.",
+          "videoLock": "[Kailash] : first light on eastern ridges; rose and gold on snow; long shadows; thin cold air; distant summit glow; silence and immensity."
+        }
+      ]
+    },
+    {
+      "id": "varanasi_ghat",
+      "label": "Varanasi ghats",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - morning river mist",
+          "characterBrief": "[Varanasi ghats] : wide Ganga steps; morning mist on water; diyas and soft smoke; ochre stone; distant temples; slow river current; human scale against river expanse.",
+          "videoLock": "[Varanasi ghats] : wide Ganga steps; morning mist on water; diyas and soft smoke; ochre stone; distant temples; slow river current; human scale against river expanse."
+        },
+        {
+          "id": "version2",
+          "label": "version2 - evening aarti glow",
+          "characterBrief": "[Varanasi ghats] : evening lamps; warm firelight on faces and water; bell sound implied visually; crowded terraces readable but not chaotic; gold reflections on river.",
+          "videoLock": "[Varanasi ghats] : evening lamps; warm firelight on faces and water; bell sound implied visually; crowded terraces readable but not chaotic; gold reflections on river."
+        }
+      ]
+    },
+    {
+      "id": "vrindavan",
+      "label": "Vrindavan groves",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - pastoral noon",
+          "characterBrief": "[Vrindavan] : tangled sacred groves; filtered sun; dust motes; cattle paths; Yamuna glimpse optional; soft greens and warm earth; gentle breeze in leaves.",
+          "videoLock": "[Vrindavan] : tangled sacred groves; filtered sun; dust motes; cattle paths; Yamuna glimpse optional; soft greens and warm earth; gentle breeze in leaves."
+        },
+        {
+          "id": "version2",
+          "label": "version2 - monsoon green",
+          "characterBrief": "[Vrindavan] : saturated monsoon greens; wet bark; heavy clouds with silver edges; puddles reflecting canopy; humid air visible in haze.",
+          "videoLock": "[Vrindavan] : saturated monsoon greens; wet bark; heavy clouds with silver edges; puddles reflecting canopy; humid air visible in haze."
+        }
+      ]
+    },
+    {
+      "id": "himalaya_forest",
+      "label": "Himalayan forest",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - pine and mist",
+          "characterBrief": "[Himalayan forest] : high-altitude pine and deodar; mist between trunks; mossy stones; distant snow glimpses; cold breath in air; quiet birdless hush.",
+          "videoLock": "[Himalayan forest] : high-altitude pine and deodar; mist between trunks; mossy stones; distant snow glimpses; cold breath in air; quiet birdless hush."
+        }
+      ]
+    },
+    {
+      "id": "ocean_dawn",
+      "label": "Ocean at dawn",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - gentle tide",
+          "characterBrief": "[Ocean at dawn] : low horizon; soft apricot sky; slow rolling waves; wet sand mirror; distant fishing boats as silhouettes; salt haze; vast calm.",
+          "videoLock": "[Ocean at dawn] : low horizon; soft apricot sky; slow rolling waves; wet sand mirror; distant fishing boats as silhouettes; salt haze; vast calm."
+        }
+      ]
+    },
+    {
+      "id": "temple_courtyard",
+      "label": "Temple courtyard",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - lamp night",
+          "characterBrief": "[Temple courtyard] : carved stone pillars; oil lamps in niches; warm pools of light; jasmine garlands; open sky square above; incense smoke layers; intimate sacred scale.",
+          "videoLock": "[Temple courtyard] : carved stone pillars; oil lamps in niches; warm pools of light; jasmine garlands; open sky square above; incense smoke layers; intimate sacred scale."
+        },
+        {
+          "id": "version2",
+          "label": "version2 - daylight festival",
+          "characterBrief": "[Temple courtyard] : bright midday; marigold streamers; brass details catching sun; crowd suggestion in soft depth; festive colour without losing stone architecture read.",
+          "videoLock": "[Temple courtyard] : bright midday; marigold streamers; brass details catching sun; crowd suggestion in soft depth; festive colour without losing stone architecture read."
+        }
+      ]
+    },
+    {
+      "id": "amarnath_cave",
+      "label": "Amarnath cave",
+      "versions": [
+        {
+          "id": "version1",
+          "label": "version1 - ice lingam chamber",
+          "characterBrief": "[Amarnath cave] : natural ice cavern; blue-white ice textures; single shaft of cold light; dripping water; echoing stillness; humbling scale inside stone.",
+          "videoLock": "[Amarnath cave] : natural ice cavern; blue-white ice textures; single shaft of cold light; dripping water; echoing stillness; humbling scale inside stone."
+        }
+      ]
+    }
+  ]
+}

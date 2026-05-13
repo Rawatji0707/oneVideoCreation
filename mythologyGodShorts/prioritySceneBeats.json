@@ -1,0 +1,59 @@
+{
+  "presets": [
+    {
+      "id": "psb_shivji_nandi",
+      "label": "Shivji on Nandi",
+      "text": "Shivji seated on Nandi (sacred bull); slow dignified motion; calm frontal three-quarter view.",
+      "quickFill": true
+    },
+    {
+      "id": "psb_krishna_flute",
+      "label": "Krishna playing flute",
+      "text": "Krishna playing bansuri (flute); serene profile; soft pastoral light and gentle camera drift.",
+      "quickFill": true
+    },
+    {
+      "id": "psb_hanuman_flying",
+      "label": "Hanuman flying",
+      "text": "Hanuman in flight over peaks; gada visible; powerful forward motion; wind in clothes.",
+      "quickFill": true
+    },
+    {
+      "id": "psb_ganesha_blessing",
+      "label": "Ganesha blessing",
+      "text": "Ganesha seated; blessing abhaya mudra; warm lamp-lit courtyard; relaxed divine presence.",
+      "quickFill": true
+    },
+    {
+      "id": "psb_durga_lion",
+      "label": "Durga on lion",
+      "text": "Durga on lion; fierce-calm stance; festival energy; strong silhouette against sky.",
+      "quickFill": true
+    },
+    {
+      "id": "psb_shiva_parvati_kailash",
+      "label": "Shiva & Parvati — Kailash",
+      "text": "Shiva and Parvati together on snowline; shared calm gaze toward horizon; wind in fabric; trident as vertical accent; vast peaks behind; slow joint walk or still tableau."
+    },
+    {
+      "id": "psb_ram_sita_forest",
+      "label": "Ram & Sita — forest exile",
+      "text": "Ram and Sita side by side on forest path; soft exile palette; dappled light; bow resting; quiet mutual reassurance; camera at respectful distance."
+    },
+    {
+      "id": "psb_kartikeya_charge",
+      "label": "Kartikeya — forward charge",
+      "text": "Kartikeya surging forward with vel lowered; dust burst from ground; low heroic angle; controlled speed readable in one short clip."
+    },
+    {
+      "id": "psb_lakshmi_lotus",
+      "label": "Lakshmi — lotus rise",
+      "text": "Lakshmi rising from lotus on still water; coins or petals falling as soft glints; warm rim light; symmetrical calm framing; no chaotic motion."
+    },
+    {
+      "id": "psb_dual_deity_mount",
+      "label": "Two figures — mount clarity",
+      "text": "Focal deity seated on named mount; second named figure stands beside; each name used distinctly; no merged anatomy; slow dignified motion; readable spacing between bodies."
+    }
+  ]
+}
