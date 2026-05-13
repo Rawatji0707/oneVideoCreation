@@ -17,6 +17,12 @@
     <header class="app-header">
       <h1>Mythology shorts</h1>
       <p>Build prompts, copy, paste into Grok</p>
+      <div class="header-actions" aria-label="Reset actions">
+        <button type="button" class="btn-restart" id="restart-app-btn">Remove localstorage</button>
+        <button type="button" class="btn-restart btn-restart-secondary" id="reset-editing-state-top-btn">
+          Reset editing state
+        </button>
+      </div>
     </header>
 
     <main>
@@ -32,6 +38,16 @@
         <div class="panel-body">
           <div id="character-rows" class="character-rows"></div>
           <button type="button" class="btn-add" id="btn-add-character">+ Add figure</button>
+          <div class="catalog-actions" aria-label="God catalog actions">
+            <button type="button" class="btn-small btn-accent" id="god-add-btn">Add</button>
+            <button type="button" class="btn-small" id="god-update-btn">Update</button>
+            <button type="button" class="btn-small btn-danger" id="god-delete-btn">Delete</button>
+          </div>
+          <div class="catalog-actions catalog-actions-secondary" aria-label="God JSON actions">
+            <button type="button" class="btn-small" id="god-export-btn">Export</button>
+            <button type="button" class="btn-small" id="god-copy-json-btn">Copy</button>
+            <button type="button" class="btn-small btn-danger" id="god-reset-btn">Reset</button>
+          </div>
           <div class="field" id="field-p1-notes" hidden>
             <div class="label-row">
               <label for="p1-optional-notes">Optional notes</label>
@@ -56,7 +72,40 @@
         <div class="panel-head">
           <div class="panel-num" aria-hidden="true">2</div>
           <div class="panel-title">
-            <h2 id="p2-title">Place</h2>
+            <h2 id="p2-title">Scene base</h2>
+            <span>Background + beats helper</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <div class="label-row">
+              <label for="p2-scene-input">Basic scene information</label>
+              <button
+                type="button"
+                class="hint-icon"
+                title="Describe the action plainly. Copy Prompt creates a ChatGPT helper that returns Optional notes and Priority scene beats only."
+                aria-label="Help: basic scene information"
+              >
+                ?
+              </button>
+            </div>
+            <textarea
+              id="p2-scene-input"
+              rows="4"
+              autocomplete="off"
+              placeholder="Example: Shiva rides Nandi across snow ridges; wind sweeps snow; camera tracks alongside."
+            ></textarea>
+          </div>
+          <button type="button" class="btn-copy" id="copy-scene-helper">Copy prompt</button>
+        </div>
+      </section>
+
+      <!-- Panel 3 -->
+      <section class="panel" aria-labelledby="p3-title">
+        <div class="panel-head">
+          <div class="panel-num" aria-hidden="true">3</div>
+          <div class="panel-title">
+            <h2 id="p3-title">Place</h2>
             <span>Setting look-lock</span>
           </div>
         </div>
@@ -99,16 +148,26 @@
             </div>
             <textarea id="bg-optional-notes" rows="2" autocomplete="off"></textarea>
           </div>
+          <div class="catalog-actions" aria-label="Background catalog actions">
+            <button type="button" class="btn-small btn-accent" id="bg-add-btn">Add</button>
+            <button type="button" class="btn-small" id="bg-update-btn">Update</button>
+            <button type="button" class="btn-small btn-danger" id="bg-delete-btn">Delete</button>
+          </div>
+          <div class="catalog-actions catalog-actions-secondary" aria-label="Background JSON actions">
+            <button type="button" class="btn-small" id="bg-export-btn">Export</button>
+            <button type="button" class="btn-small" id="bg-copy-json-btn">Copy</button>
+            <button type="button" class="btn-small btn-danger" id="bg-reset-btn">Reset</button>
+          </div>
           <button type="button" class="btn-copy" id="copy-p2">Copy prompt</button>
         </div>
       </section>
 
-      <!-- Panel 3 -->
-      <section class="panel" aria-labelledby="p3-title">
+      <!-- Panel 4 -->
+      <section class="panel" aria-labelledby="p4-title">
         <div class="panel-head">
-          <div class="panel-num" aria-hidden="true">3</div>
+          <div class="panel-num" aria-hidden="true">4</div>
           <div class="panel-title">
-            <h2 id="p3-title">Video vibe</h2>
+            <h2 id="p4-title">Video vibe</h2>
             <span>Locks + scene recipe</span>
           </div>
         </div>
@@ -231,6 +290,11 @@
               <select id="video-sub"></select>
             </div>
           </div>
+          <div class="catalog-actions catalog-actions-secondary" aria-label="Editing state JSON actions">
+            <button type="button" class="btn-small" id="state-export-btn">Export state</button>
+            <button type="button" class="btn-small" id="state-copy-json-btn">Copy state</button>
+            <button type="button" class="btn-small btn-danger" id="state-reset-btn">Reset state</button>
+          </div>
           <div class="field">
             <div class="label-row">
               <label for="p3-priority">Scene beats</label>
@@ -251,6 +315,19 @@
             </div>
             <div id="priority-examples-row" class="priority-examples-row" aria-label="Quick scene beat examples"></div>
             <textarea id="p3-priority" rows="4" autocomplete="off" placeholder=""></textarea>
+            <button type="button" class="btn-add btn-inline-action" id="beats-enhance-btn">
+              Enhance wording…
+            </button>
+          </div>
+          <div class="catalog-actions" aria-label="Scene beats catalog actions">
+            <button type="button" class="btn-small btn-accent" id="beats-add-btn">Add</button>
+            <button type="button" class="btn-small" id="beats-update-btn">Update</button>
+            <button type="button" class="btn-small btn-danger" id="beats-delete-btn">Delete</button>
+          </div>
+          <div class="catalog-actions catalog-actions-secondary" aria-label="Scene beats JSON actions">
+            <button type="button" class="btn-small" id="beats-export-btn">Export</button>
+            <button type="button" class="btn-small" id="beats-copy-json-btn">Copy</button>
+            <button type="button" class="btn-small btn-danger" id="beats-reset-btn">Reset</button>
           </div>
           <button type="button" class="btn-copy" id="copy-p3">Copy prompt</button>
         </div>
@@ -258,8 +335,23 @@
     </main>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <dialog id="catalog-dialog" class="catalog-dialog" aria-labelledby="catalog-dialog-title">
+      <div class="catalog-dialog-inner">
+        <div class="catalog-dialog-head">
+          <h2 id="catalog-dialog-title">Catalog</h2>
+          <button type="button" class="btn-icon" id="catalog-dialog-close" aria-label="Close">x</button>
+        </div>
+        <p id="catalog-dialog-error" class="dialog-error" role="alert" hidden></p>
+        <div id="catalog-dialog-body"></div>
+        <div class="catalog-dialog-actions">
+          <button type="button" class="btn-small" id="catalog-dialog-cancel">Cancel</button>
+          <button type="button" class="btn-small btn-accent" id="catalog-dialog-save">Save</button>
+        </div>
+      </div>
+    </dialog>
 
     <script src="catalog.js"></script>
+    <script src="catalog-data.js"></script>
     <script src="prompt-engine.js"></script>
     <script src="app.js"></script>
   </body>

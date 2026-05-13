@@ -1,0 +1,246 @@
+{
+  "mainStyles": [
+    {
+      "id": "cartoon",
+      "label": "Cartoon",
+      "subcategories": [
+        {
+          "id": "2d",
+          "label": "2D flat",
+          "hint": "Bold outlines, flat color fills, readable silhouette; playful readable shapes."
+        },
+        {
+          "id": "3d",
+          "label": "3D cartoon",
+          "hint": "Rounded forms, soft shading, toy-like or Pixar-adjacent exaggeration without horror uncanny."
+        },
+        {
+          "id": "anime",
+          "label": "Anime",
+          "hint": "Clean line art, cel-style shading, expressive eyes optional—keep respectful for deity depictions."
+        },
+        {
+          "id": "comic",
+          "label": "Comic book",
+          "hint": "Ink outlines, halftone or flat fills, dynamic pose readability."
+        },
+        {
+          "id": "chibi",
+          "label": "Chibi",
+          "hint": "Large head, small body—use only if tone fits; keep recognizable deity cues."
+        },
+        {
+          "id": "cel_shaded",
+          "label": "Cel-shaded 3D",
+          "hint": "Stepped shading bands on 3D forms; crisp graphic separation of light and shadow."
+        }
+      ]
+    },
+    {
+      "id": "realistic_cinematic",
+      "label": "Realistic / cinematic",
+      "subcategories": [
+        {
+          "id": "natural_lighting",
+          "label": "Natural motivated light",
+          "hint": "Physically plausible sun/sky bounce; soft shadows; lens-neutral clarity."
+        },
+        {
+          "id": "film_grain",
+          "label": "Film grain 35mm",
+          "hint": "Subtle photochemical grain, gentle halation; restrained grade—not noisy."
+        },
+        {
+          "id": "neo_noir",
+          "label": "Neo-noir contrast",
+          "hint": "Strong key/fill ratio, deep shadows, selective rim—avoid unreadable faces."
+        },
+        {
+          "id": "documentary",
+          "label": "Documentary observational",
+          "hint": "Neutral lensing, handheld micro-move optional; grounded realism."
+        },
+        {
+          "id": "epic_wide",
+          "label": "Epic widescreen",
+          "hint": "Ultra-wide composition, layered depth, scale cues in environment."
+        },
+        {
+          "id": "intimate_close",
+          "label": "Intimate shallow focus",
+          "hint": "Close coverage, shallow depth of field; emotional presence without clutter."
+        }
+      ]
+    },
+    {
+      "id": "vfx_cgi",
+      "label": "VFX / CGI",
+      "subcategories": [
+        {
+          "id": "full_cgi",
+          "label": "Full CGI",
+          "tagline": "Fully synthetic scene; shader-consistent control.",
+          "hint": "Fully synthetic scene with consistent shaders; aim photoreal or stylized consistency.",
+          "tooltip": "Fully synthetic scene with consistent shaders.\nLock photoreal or stylized consistency across materials.\nIdeal when every surface and light must be art-directed."
+        },
+        {
+          "id": "particle_heavy",
+          "label": "Particle-heavy FX",
+          "tagline": "Dust, embers, sparks—readable silhouette.",
+          "hint": "Dust, embers, magic particles—controlled density so figure stays readable.",
+          "tooltip": "Layered particles: dust, embers, sparks, ritual motes.\nKeep density controlled so the deity silhouette stays readable.\nPairs well with dramatic motion and divine presence."
+        },
+        {
+          "id": "photoreal_comp",
+          "label": "Photoreal compositing",
+          "tagline": "Live-action plate + CGI that matches grain.",
+          "hint": "Live-action plate integration with CGI—match grain, color, and shadow contact.",
+          "tooltip": "Integrate CGI into a live-action plate.\nMatch grain, color science, and shadow contact.\nGrounded realism with epic-scale embellishments."
+        },
+        {
+          "id": "elemental_power",
+          "label": "Elemental power FX",
+          "tagline": "Lightning, fire, storm—charged elemental spectacle.",
+          "hint": "Focused elemental motifs (lightning, fire, storm, radiant bursts) with coherent scale and energy arcs.",
+          "tooltip": "High-impact elemental motifs: lightning branches, fire crowns, storm sheets.\nKeep scale coherent—energy arcs read clearly against the figure.\nEpic spectacle without muddying silhouette or face."
+        },
+        {
+          "id": "cloth_hair_detail",
+          "label": "Cloth & hair simulation",
+          "tagline": "Flowing fabric and hair—dynamic secondary motion.",
+          "hint": "Dynamic cloth and hair simulation—stable collision cues, readable silhouette, controlled stray strands.",
+          "tooltip": "Secondary motion from simulated cloth and hair.\nStable collision cues so motion feels physically grounded.\nReadable silhouette; controlled stray strands for elegance."
+        },
+        {
+          "id": "fantasy_fx",
+          "label": "Fantasy elemental FX",
+          "tagline": "Fire/water/light motifs at epic scale.",
+          "hint": "Fire/water/light motifs with epic scale but coherent physics cues.",
+          "tooltip": "Broad fantasy elemental language—fire, water, radiant light.\nEpic scale with coherent physics cues.\nGreat for mythic vistas and symbolic motifs."
+        },
+        {
+          "id": "mocap_hybrid",
+          "label": "Mocap hybrid",
+          "tagline": "Performance-driven motion with digital doubles.",
+          "hint": "Performance-driven body motion with digital doubles or touch-up.",
+          "tooltip": "Blend captured performance with digital doubles or cleanup.\nKeeps human timing while allowing heroic proportions.\nUse when grounded acting matters alongside FX."
+        },
+        {
+          "id": "stylized_fx",
+          "label": "Stylized magical FX",
+          "tagline": "Graphic glows, runes, aura—silhouette-safe.",
+          "hint": "Graphic glows, runes, aura—clear silhouette preservation.",
+          "tooltip": "Graphic magical language: glows, runes, stylized aura.\nPreserve clear silhouette and readable edges.\nIdeal for iconic, poster-like divine imagery."
+        }
+      ]
+    },
+    {
+      "id": "animation",
+      "label": "Animation",
+      "subcategories": [
+        {
+          "id": "hand_drawn_2d",
+          "label": "Traditional 2D hand-drawn",
+          "hint": "Frame-by-frame drawn motion with slight line boil optional."
+        },
+        {
+          "id": "stop_motion",
+          "label": "Stop-motion",
+          "hint": "Miniature tactile surfaces, stepped motion, tangible lighting."
+        },
+        {
+          "id": "flash_style_2d",
+          "label": "Vector / Flash-style 2D",
+          "hint": "Clean fills and gradients; crisp motion tweens—avoid chaotic limbs."
+        },
+        {
+          "id": "cg_animated_3d",
+          "label": "Feature 3D animation",
+          "hint": "Smooth interpolated 3D acting; expressive but controlled facial."
+        },
+        {
+          "id": "cut_out",
+          "label": "Cut-out / silhouette",
+          "hint": "Layered paper or shadow-puppet feel; strong graphic shapes."
+        },
+        {
+          "id": "rotoscope",
+          "label": "Rotoscope trace",
+          "hint": "Traced live motion with illustrative overlay—dreamlike edge shimmer Optional."
+        }
+      ]
+    },
+    {
+      "id": "artistic",
+      "label": "Artistic",
+      "subcategories": [
+        {
+          "id": "oil_painting",
+          "label": "Oil painting",
+          "hint": "Visible brush texture, rich impasto hints; classical palette discipline."
+        },
+        {
+          "id": "watercolor",
+          "label": "Watercolor",
+          "hint": "Soft washes, bloom edges, paper grain—gentle spiritual mood."
+        },
+        {
+          "id": "sketch_ink",
+          "label": "Sketch / ink",
+          "hint": "Cross-hatch or brush ink lines; monochrome or limited palette."
+        },
+        {
+          "id": "concept_art",
+          "label": "Concept art polish",
+          "hint": "Illustration-ready staging, mood-focused lighting studies."
+        },
+        {
+          "id": "matte_painting",
+          "label": "Matte painting vista",
+          "hint": "Epic landscape backdrop integration; painterly depth haze."
+        },
+        {
+          "id": "surrealist",
+          "label": "Surrealist symbolic",
+          "hint": "Symbolic distortion where appropriate—still respect figure clarity."
+        }
+      ]
+    },
+    {
+      "id": "mythological",
+      "label": "Mythological",
+      "subcategories": [
+        {
+          "id": "classical_mural",
+          "label": "Classical mural",
+          "hint": "Stone/architectural mural palette; flattened perspective echoes temple art."
+        },
+        {
+          "id": "temple_carving",
+          "label": "Temple stone carving",
+          "hint": "Relief lighting, chisel readability, monumental calm."
+        },
+        {
+          "id": "miniature_painting",
+          "label": "Indian miniature",
+          "hint": "Fine jewelry detail, jewel tones, flattened scenic composition."
+        },
+        {
+          "id": "pattachitra",
+          "label": "Pattachitra folk",
+          "hint": "Bold outlines, decorative flora borders optional—folk narrative clarity."
+        },
+        {
+          "id": "bronze_statue_mood",
+          "label": "Bronze idol sculptural",
+          "hint": "Metallic patina read, carved ornament hints, still gravitas."
+        },
+        {
+          "id": "epic_fresco",
+          "label": "Epic fresco backdrop",
+          "hint": "Soft plaster texture, narrative fresco sweep behind figure."
+        }
+      ]
+    }
+  ]
+}

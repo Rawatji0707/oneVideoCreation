@@ -62,6 +62,39 @@ body {
   color: var(--text-muted);
 }
 
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-restart {
+  min-height: 40px;
+  padding: 9px 14px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--danger);
+  background: rgba(232, 93, 93, 0.12);
+  border: 1px solid rgba(232, 93, 93, 0.28);
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-restart:active {
+  transform: scale(0.98);
+}
+
+.btn-restart-secondary {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: rgba(201, 162, 39, 0.32);
+}
+
 .panel {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -198,6 +231,7 @@ body {
 }
 
 select,
+input,
 textarea {
   width: 100%;
   font: inherit;
@@ -218,6 +252,15 @@ select {
   padding-right: 40px;
 }
 
+input {
+  line-height: 1.2;
+}
+
+input[type="checkbox"] {
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+
 textarea {
   min-height: 100px;
   resize: vertical;
@@ -225,6 +268,7 @@ textarea {
 }
 
 select:focus,
+input:focus,
 textarea:focus,
 button:focus-visible {
   outline: 2px solid var(--accent);
@@ -295,6 +339,54 @@ button:focus-visible {
   border-radius: var(--radius-sm);
   cursor: pointer;
   touch-action: manipulation;
+}
+
+.btn-inline-action {
+  margin-top: 10px;
+  border-style: solid;
+  background: var(--bg-input);
+}
+
+.catalog-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.catalog-actions-secondary {
+  margin-top: 8px;
+}
+
+.btn-small {
+  min-height: 42px;
+  padding: 9px 8px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-small:active {
+  transform: scale(0.98);
+}
+
+.btn-accent {
+  color: #0c0e14;
+  background: linear-gradient(135deg, #e8c547, #c9a227);
+  border-color: transparent;
+}
+
+.btn-danger {
+  color: var(--danger);
+  background: rgba(232, 93, 93, 0.12);
+  border-color: rgba(232, 93, 93, 0.28);
 }
 
 .chip-row {
@@ -391,6 +483,102 @@ button:focus-visible {
 .toast.visible {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
+}
+
+.catalog-dialog {
+  width: min(100% - 24px, 520px);
+  max-height: min(86dvh, 720px);
+  padding: 0;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.65);
+}
+
+.catalog-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(3px);
+}
+
+.catalog-dialog-inner {
+  padding: 16px;
+  overflow: auto;
+  max-height: min(86dvh, 720px);
+}
+
+.catalog-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.catalog-dialog-head h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.btn-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  background: var(--bg-input);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dialog-error {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  color: #ffdada;
+  background: rgba(232, 93, 93, 0.16);
+  border: 1px solid rgba(232, 93, 93, 0.3);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+.dialog-field {
+  margin-bottom: 12px;
+}
+
+.dialog-field label,
+.dialog-check {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dialog-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 14px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.dialog-check input {
+  width: 20px;
+  min-height: 20px;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.catalog-dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .visually-hidden {
