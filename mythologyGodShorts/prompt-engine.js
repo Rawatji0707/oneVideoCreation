@@ -203,13 +203,21 @@
    */
   function buildPrompt3Merged(state) {
     const gods = state.gods || [];
-    const god = gods[0] || null;
     const background = state.background || null;
-    if (!gods.length || !god || !background) {
+    const bgLockAll = String(background?.videoLock || "").trim();
+    const priorityRaw = String(state.prompt3?.priorityLines || "").trim();
+    if (!bgLockAll) {
       return [
-        "Select **God** + **version** (Prompt 1) and **Background** + **version** (Prompt 2), then copy again.",
+        "Add text in the **Background lock** field (Step 2), then copy **Prompt 3** again.",
         "",
-        "Prompt 3 merges those locks with performance, camera, atmosphere, constraints, mood, and video style.",
+        "Prompt 3 merges that lock with Priority scene beats and your creative choices.",
+      ].join("\n");
+    }
+    if (!priorityRaw) {
+      return [
+        "Add **Priority scene beats** (Step 3), then copy **Prompt 3** again.",
+        "",
+        "Those beats drive motion and staging together with the Background lock.",
       ].join("\n");
     }
 
@@ -225,7 +233,6 @@
       : [];
     const moodLines = moodLinesFromKeys(moodKeys);
     const hasMood = moodLines.length > 0;
-    const priorityRaw = String(state.prompt3?.priorityLines || "").trim();
     const multiFig = gods.length >= 2;
     const bgLock = String(background.videoLock || "").trim();
     const perfLine = hasExpandLine(perf);
@@ -270,27 +277,31 @@
         "If anything later in this message disagrees with this block on pose, action, props, motion, composition intent, or dynamics, **follow this block**.",
         multiFig
           ? "Still keep **every locked figure** and the place recognizable per the locks below unless this block explicitly rewrites an element (e.g. mount, seating, interaction)."
-          : "Still keep the deity and place recognizable per the locks below unless this block explicitly rewrites an element (e.g. mount, seating).",
+          : gods.length
+            ? "Still keep the deity and place recognizable per the locks below unless this block explicitly rewrites an element (e.g. mount, seating)."
+            : "Still keep the place recognizable per the environment lock below unless this block explicitly rewrites an element.",
         "",
         priorityRaw,
         ""
       );
     }
 
-    lines.push("=== LOCKED — CHARACTER (must honor — do not reduce to a generic “deity” description) ===");
-    gods.forEach((g, gi) => {
-      const godLock = String(g.videoLock || "").trim();
-      const tag = gods.length > 1 ? `Figure ${gi + 1}` : "Figure";
-      lines.push(`${tag}: ${g.label}.`);
-      lines.push(
-        godLock
-          ? `Appearance / costume lock (carry **all** substantive detail below into the paragraph—skin, face, eyes, costume, posture, build, species/anatomy for non-human figures, aura—where visible in this shot): ${godLock}`
-          : "Keep traditional depiction consistent."
-      );
-      if (gi < gods.length - 1) lines.push("");
-    });
-    if (multiFig) {
-      lines.push(...PROMPT3_MULTI_FIGURE_SEPARATION_RULES);
+    if (gods.length > 0) {
+      lines.push("=== LOCKED — CHARACTER (must honor — do not reduce to a generic “deity” description) ===");
+      gods.forEach((g, gi) => {
+        const godLock = String(g.videoLock || "").trim();
+        const tag = gods.length > 1 ? `Figure ${gi + 1}` : "Figure";
+        lines.push(`${tag}: ${g.label}.`);
+        lines.push(
+          godLock
+            ? `Appearance / costume lock (carry **all** substantive detail below into the paragraph—skin, face, eyes, costume, posture, build, species/anatomy for non-human figures, aura—where visible in this shot): ${godLock}`
+            : "Keep traditional depiction consistent."
+        );
+        if (gi < gods.length - 1) lines.push("");
+      });
+      if (multiFig) {
+        lines.push(...PROMPT3_MULTI_FIGURE_SEPARATION_RULES);
+      }
     }
     lines.push(
       "=== LOCKED — SETTING (must honor — do not replace with vague “mountains”) ===",
@@ -304,16 +315,22 @@
       "- Put lock detail into **natural sentences**, but **do not summarize away** named attributes (jewellery, serpent coils, trishul shape, damru, third eye glow, Neelkanth tone, storm/lightning/wind, rocky peaks, etc.).",
       multiFig
         ? "- **Priority scene beats** (if present above) control **action, motion, and dramatic beat**. Locks control **how each figure and the place look** during that action."
-        : "- **Priority scene beats** (if present above) control **action, motion, and dramatic beat** (e.g. descent, trishul swing, intensity). Locks control **how the figure and place look** during that action.",
+        : gods.length
+          ? "- **Priority scene beats** (if present above) control **action, motion, and dramatic beat** (e.g. descent, trishul swing, intensity). Locks control **how the figure and place look** during that action."
+          : "- **Priority scene beats** control **action, motion, and dramatic beat**. The **environment lock** controls **how the place looks** during that action.",
       multiFig
         ? "- If priority motion seems intense, still describe **each** locked figure using that figure’s **character lock**—not a generic silhouette."
-        : "- If priority motion seems intense, still describe the figure using the **character lock’s** materials and anatomy—not a generic warrior silhouette.",
+        : gods.length
+          ? "- If priority motion seems intense, still describe the figure using the **character lock’s** materials and anatomy—not a generic warrior silhouette."
+          : "- If priority motion seems intense, keep staging coherent with the **environment lock** and **priority beats**—do not invent contradictory layout.",
       "- The **Video style** section below must read clearly in your paragraph (e.g. VFX/CGI fantasy elemental FX—use wording consistent with that selection).",
       "- Omit a lock clause **only** when this camera angle clearly cannot show it; otherwise keep it.",
       ...(perfLine
         ? []
         : [
-            "- **Performance** is **None** — do **not** impose a default performance preset (e.g. hero stance / standing calm / grounded stillness). Motion comes from **priority scene beats** when present, otherwise from the character lock—preserve flight, descent, mid-air action, etc. when beats imply them.",
+            gods.length
+              ? "- **Performance** is **None** — do **not** impose a default performance preset (e.g. hero stance / standing calm / grounded stillness). Motion comes from **priority scene beats** when present, otherwise from the character lock—preserve flight, descent, mid-air action, etc. when beats imply them."
+              : "- **Performance** is **None** — do **not** impose a default performance preset (e.g. hero stance / standing calm / grounded stillness). Motion comes from **priority scene beats** and the environment lock when beats imply flight, descent, mid-air action, etc.",
           ]),
       ...(!atmLine
         ? [
@@ -343,7 +360,11 @@
       ""
     );
 
-    const combineParts = [multiFig ? "each figure’s distinct look" : "figure look", "place look", "camera"];
+    const combineParts = [
+      multiFig ? "each figure’s distinct look" : gods.length === 1 ? "figure look" : "story motion from beats",
+      "place look",
+      "camera",
+    ];
     if (perfLine) combineParts.push("performance");
     if (atmLine) combineParts.push("atmosphere");
     if (consLine) combineParts.push("constraints");
@@ -359,12 +380,16 @@
 
     const integrationLine = multiFig
       ? `- **Covers** ${combineParts.join(", ")} in **one** paragraph by describing **coexisting** distinct figures—**not** by merging or fusing them.${noneNote} Use connectors such as *beside*, *with*, or *while* for spatial relation; **never** hybrid or fused anatomy.`
-      : `- Combines ${combineParts.join(", ")}.${noneNote}`;
+      : gods.length
+        ? `- Combines ${combineParts.join(", ")}.${noneNote}`
+        : `- Combines ${combineParts.join(", ")}—character appearance is driven only by **priority beats**, not catalog locks.${noneNote}`;
 
     const whatWrite = [
       "=== WHAT TO WRITE ===",
       "Compose **one** coherent paragraph that:",
-      "- **Embeds** the Character lock(s) and Environment lock with **high fidelity**—not a shortened recap—**and** keeps **verbatim** hard-limit phrases from those locks and from **priority beats** when present (*strictly*, *exactly*, *only one*, etc.).",
+      gods.length
+        ? "- **Embeds** the Character lock(s) and Environment lock with **high fidelity**—not a shortened recap—**and** keeps **verbatim** hard-limit phrases from those locks and from **priority beats** when present (*strictly*, *exactly*, *only one*, etc.)."
+        : "- **Embeds** the Environment lock with **high fidelity**—not a shortened recap—**and** keeps **verbatim** hard-limit phrases from that lock and from **priority beats** when present (*strictly*, *exactly*, *only one*, etc.).",
       ...(multiFig
         ? [
             "- **Each** character lock maps to a **separate** on-screen body (own limbs, species, proportions). **Forbidden:** merged hands/faces/torsos, or one lock’s anatomy growing from another’s body.",
@@ -380,8 +405,12 @@
           ? "- **Priority scene beats** define the **story motion**; dropdown performance / atmosphere / constraints / camera rows are **defaults**—yield to Priority for descent, strikes, flight, etc."
           : "- **Priority scene beats** define the **story motion**; **Performance**, **Atmosphere**, and **Constraints** are **None**—beats and locks fully control action and staging; **camera** and **video style** refine the look.",
         perfLine || atmLine || consLine
-          ? "- Where Priority clashes with a mild dropdown row (performance, atmosphere, or camera), **Priority wins** for action intensity; still describe trishul, serpent, skin tone, storm peaks, etc. per the locks."
-          : "- Where Priority clashes with mild camera framing, **Priority wins** for action intensity; still describe trishul, serpent, skin tone, storm peaks, etc. per the locks.",
+          ? gods.length
+            ? "- Where Priority clashes with a mild dropdown row (performance, atmosphere, or camera), **Priority wins** for action intensity; still describe costume, anatomy, and setting cues per the locks."
+            : "- Where Priority clashes with a mild dropdown row (performance, atmosphere, or camera), **Priority wins** for action intensity; still honor the environment lock and beat wording."
+          : gods.length
+            ? "- Where Priority clashes with mild camera framing, **Priority wins** for action intensity; still describe costume, anatomy, and setting cues per the locks."
+            : "- Where Priority clashes with mild camera framing, **Priority wins** for action intensity; still honor the environment lock and beat wording.",
         "- Keep edits readable unless Priority asks for fierce motion (then match that energy while keeping lock-accurate costume and setting)."
       );
     } else {
@@ -425,9 +454,12 @@
     const atmLine = hasExpandLine(atm);
     const consLine = hasExpandLine(cons);
     const multiFig = godList.length >= 2;
-    const idKeep = multiFig
-      ? "**identical** locked figures (each entity keeps its **own** name, anatomy, and costume—never merge two into one)"
-      : "**identical** deity identity";
+    const idKeep =
+      godList.length >= 2
+        ? "**identical** locked figures (each entity keeps its **own** name, anatomy, and costume—never merge two into one)"
+        : godList.length === 1
+          ? "**identical** deity identity"
+          : "**continuous** staging from **priority beats** and the **environment lock**";
 
     let beatIntroSecond;
     if (perfLine && atmLine && consLine) {
@@ -491,27 +523,31 @@
           : []),
         multiFig
           ? "Still keep **every locked figure** and the place recognizable per the locks unless this block explicitly rewrites an element."
-          : "Still keep the deity and place recognizable per the locks unless this block explicitly rewrites an element.",
+          : godList.length
+            ? "Still keep the deity and place recognizable per the locks unless this block explicitly rewrites an element."
+            : "Still keep the place recognizable per the environment lock unless this block explicitly rewrites an element.",
         "",
         priorityRaw,
         ""
       );
     }
 
-    lines.push("=== LOCKED — CHARACTER (every scene — same fidelity) ===");
-    godList.forEach((g, gi) => {
-      const godLock = String(g.videoLock || "").trim();
-      const tag = godList.length > 1 ? `Figure ${gi + 1}` : "Figure";
-      lines.push(`${tag}: ${g.label}.`);
-      lines.push(
-        godLock
-          ? `Appearance / costume lock (carry substantive detail into **each** paragraph where visible at that framing): ${godLock}`
-          : "Keep traditional depiction consistent."
-      );
-      if (gi < godList.length - 1) lines.push("");
-    });
-    if (multiFig) {
-      lines.push(...PROMPT3_MULTI_FIGURE_SEPARATION_RULES);
+    if (godList.length > 0) {
+      lines.push("=== LOCKED — CHARACTER (every scene — same fidelity) ===");
+      godList.forEach((g, gi) => {
+        const godLock = String(g.videoLock || "").trim();
+        const tag = godList.length > 1 ? `Figure ${gi + 1}` : "Figure";
+        lines.push(`${tag}: ${g.label}.`);
+        lines.push(
+          godLock
+            ? `Appearance / costume lock (carry substantive detail into **each** paragraph where visible at that framing): ${godLock}`
+            : "Keep traditional depiction consistent."
+        );
+        if (gi < godList.length - 1) lines.push("");
+      });
+      if (multiFig) {
+        lines.push(...PROMPT3_MULTI_FIGURE_SEPARATION_RULES);
+      }
     }
     lines.push(
       "=== LOCKED — SETTING (every scene) ===",
@@ -616,7 +652,9 @@
       `Write **${n}** English paragraphs total (one per scene). Each paragraph:`,
       multiFig
         ? "- **Embeds** the Character locks (**every** listed figure) and the Environment lock with high fidelity, including **verbatim** hard-limit phrases from the locks and beats when present (*strictly*, *exactly*, *only one*, etc.)."
-        : "- **Embeds** the Character and Environment locks with high fidelity, including **verbatim** hard-limit phrases from the locks and beats when present (*strictly*, *exactly*, *only one*, etc.).",
+        : godList.length
+          ? "- **Embeds** the Character and Environment locks with high fidelity, including **verbatim** hard-limit phrases from the locks and beats when present (*strictly*, *exactly*, *only one*, etc.)."
+          : "- **Embeds** the Environment lock with high fidelity, including **verbatim** hard-limit phrases from that lock and beats when present (*strictly*, *exactly*, *only one*, etc.). Character staging follows **priority beats**.",
       ...(multiFig
         ? [
             "- **Each** named figure is a **separate, complete** body in the text (own limbs, own species/anatomy per lock). **Do not** merge or fuse two character locks into one hybrid being; **do not** attach one figure’s hands, arms, or face to another’s body.",
@@ -627,7 +665,9 @@
       "- Uses **only** its scene’s camera binding — no mixing of other camera rows; when bindings differ, paragraphs must **not** be duplicates.",
       multiFig
         ? "- Same action / emotional beat as the others; **no** new plot, props, or extra unnamed figures—only the locked figures above (and anyone explicitly named in **priority scene beats**)."
-        : "- Same action / emotional beat as the others; **no** new plot, props, or characters.",
+        : godList.length
+          ? "- Same action / emotional beat as the others; **no** new plot, props, or characters beyond what **locks** and **priority beats** name."
+          : "- Same action / emotional beat as the others; **no** new plot or props beyond what **priority beats** and the environment lock imply.",
       "",
       "Reply with **only** the scene blocks from `Scene 1:` through the end of Scene " +
         String(n) +
@@ -643,9 +683,15 @@
     const optionalNotes = list.length === 1 ? String(list[0].optionalNotes || "").trim() : "";
 
     if (!list.length || !god) {
-      return "Select a **God** and **version**, then copy again.";
+      return [
+        "A brief realistic video set on an open green grassland in soft daylight, with a calm sky and gentle horizon and nothing crowded in the frame.",
+        "Keep the camera steady or use only a very slight slow zoom—avoid orbiting, cranes, dollies, or complicated motion.",
+        "Do not add subtitles, captions, or spoken dialogue; this should read as a quiet, visual moment.",
+      ]
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
     }
-
     const labels = list.map((g) => g.label).join(", ");
     const figureIntro =
       list.length === 1 ? `Only one figure appears: ${god.label}.` : `These figures appear together: ${labels}.`;
@@ -677,16 +723,19 @@
 
   function buildPrompt2(background, optionalNotes) {
     const notes = String(optionalNotes || "").trim();
-    if (!background || !String(background.label || "").trim()) {
-      return "Select **Background** and **version**, then copy again.";
+    const lock = String(background?.videoLock || "").trim();
+    if (!lock) {
+      return [
+        "Add text in the **Background lock** field (Step 2), then copy **Prompt 2** again.",
+        "",
+        "Prompt 2 describes only the environment using that lock.",
+      ].join("\n");
     }
-    const lock = String(background.videoLock || "").trim();
+    const label = String(background?.label || "Setting").trim();
     let para = [
       "A brief realistic video that establishes only the place and atmosphere—no characters, crowds, or dialogue.",
-      `The location is ${background.label}.`,
-      lock
-        ? `Show the environment with this look: ${lock}`
-        : `Keep mountains, sky, materials, and scale consistent with how ${background.label} is usually imagined.`,
+      `The location is ${label}.`,
+      `Show the environment with this look: ${lock}`,
       "Use a calm establishing composition: wide or medium-wide framing, steady camera or a very slight slow drift—avoid whip pans, handheld shake, or flashy transitions.",
       "Do not add subtitles, captions, or spoken narration; this should read as a quiet visual study of the setting.",
     ].join(" ");

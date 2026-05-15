@@ -476,7 +476,7 @@
     sel.replaceChildren();
     const ph = document.createElement("option");
     ph.value = "";
-    ph.textContent = "Choose…";
+    ph.textContent = "None";
     sel.appendChild(ph);
     for (const g of gods) {
       const o = document.createElement("option");
@@ -491,7 +491,7 @@
     sel.replaceChildren();
     const ph = document.createElement("option");
     ph.value = "";
-    ph.textContent = "Choose…";
+    ph.textContent = "None";
     sel.appendChild(ph);
     if (!god || !Array.isArray(god.versions)) {
       sel.disabled = true;
@@ -506,9 +506,6 @@
     }
     const want = String(preferredVersionId || "").trim();
     if (want && [...sel.options].some((op) => op.value === want)) sel.value = want;
-    else if (god.versions[0] && [...sel.options].some((op) => op.value === god.versions[0].id)) {
-      sel.value = god.versions[0].id;
-    }
   }
 
   function syncLockFromRow(card) {
@@ -640,7 +637,7 @@
     bgSelect.replaceChildren();
     const ph = document.createElement("option");
     ph.value = "";
-    ph.textContent = "Choose…";
+    ph.textContent = "None";
     bgSelect.appendChild(ph);
     for (const b of bgs) {
       const o = document.createElement("option");
@@ -650,8 +647,6 @@
     }
     if (keepBg && [...bgSelect.options].some((o) => o.value === keepBg)) {
       bgSelect.value = keepBg;
-    } else if (bgs[0]) {
-      bgSelect.value = bgs[0].id;
     }
     onBgChange(keepVersion);
   }
@@ -662,11 +657,10 @@
     bgVersionSelect.replaceChildren();
     const ph = document.createElement("option");
     ph.value = "";
-    ph.textContent = "Choose…";
+    ph.textContent = "None";
     bgVersionSelect.appendChild(ph);
     if (!bg || !Array.isArray(bg.versions) || !bg.versions.length) {
       bgVersionSelect.disabled = true;
-      bgLock.value = "";
       return;
     }
     bgVersionSelect.disabled = false;
@@ -679,8 +673,6 @@
     const want = String(preferredVersionId || "").trim();
     if (want && [...bgVersionSelect.options].some((o) => o.value === want)) {
       bgVersionSelect.value = want;
-    } else {
-      bgVersionSelect.value = bg.versions[0]?.id || "";
     }
     syncBgLock();
   }
@@ -850,14 +842,19 @@
     const optional = p1OptionalNotes ? String(p1OptionalNotes.value || "").trim() : "";
     const out = [];
     for (const card of cards) {
-      const godId = card.querySelector(".god-sel")?.value?.trim();
-      const verId = card.querySelector(".ver-sel")?.value?.trim();
-      if (!godId || !verId) continue;
-      const god = findGod(godId);
-      if (!god) continue;
-      const label = String(god.label || god.id).trim();
-      const lock = String(card.querySelector(".lock-ta")?.value || "").trim();
-      out.push({ label, videoLock: lock });
+      const godId = card.querySelector(".god-sel")?.value?.trim() || "";
+      const verId = card.querySelector(".ver-sel")?.value?.trim() || "";
+      const lockTa = String(card.querySelector(".lock-ta")?.value || "").trim();
+      const god = godId ? findGod(godId) : null;
+      const ver = god && verId ? findVersion(god, verId) : null;
+      if (godId && !god) continue;
+      if (godId && verId && !ver) continue;
+      if (godId && !verId && !lockTa) continue;
+      if (!godId && !lockTa) continue;
+      const catalogLock = ver ? String(ver.videoLock || ver.characterBrief || "").trim() : "";
+      const videoLock = lockTa || catalogLock;
+      const label = god ? String(god.label || god.id).trim() : "Character";
+      out.push({ label, videoLock });
     }
     if (out.length === 1 && optional) {
       out[0].optionalNotes = optional;
@@ -866,15 +863,14 @@
   }
 
   function collectBackground() {
+    const taLock = String(bgLock?.value || "").trim();
+    if (!taLock) return null;
     const bid = bgSelect.value?.trim();
-    const vid = bgVersionSelect.value?.trim();
-    const bg = cat()?.backgrounds?.backgrounds?.find((b) => b && b.id === bid);
-    const ver = bg && Array.isArray(bg.versions) ? bg.versions.find((v) => v && v.id === vid) : null;
-    if (!bg || !ver) return null;
+    const bg = bid ? cat()?.backgrounds?.backgrounds?.find((b) => b && b.id === bid) : null;
     return {
-      id: bg.id,
-      label: String(bg.label || bg.id).trim(),
-      videoLock: String(bgLock.value || ver.videoLock || ver.characterBrief || "").trim(),
+      id: bg?.id || "",
+      label: bg ? String(bg.label || bg.id).trim() : "Setting",
+      videoLock: taLock,
     };
   }
 
@@ -888,9 +884,6 @@
     const bgName = String(background?.label || "").trim();
     const bgLockText = String(background?.videoLock || "").trim();
 
-    if (!godName) {
-      return "Select God and God character version first, then click Copy Prompt again.";
-    }
     if (!sceneInfo) {
       return [
         "Add basic scene information in Step 2 (Basic scene information), then click Copy Prompt again.",
@@ -915,12 +908,16 @@
       "HARD RULES (NON-NEGOTIABLE):",
       "- Do NOT describe character appearance, anatomy, clothes, ornaments, face, body, age, skin, or any deity characteristics.",
       "- Assume the character lock already exists elsewhere; do not repeat or infer it.",
-      `- Refer to the focal character as "${godName}" by name when the beat involves them—do not swap that name for vague words like "figure", "deity", or "the character".`,
+      godName
+        ? `- Refer to the focal character as "${godName}" by name when the beat involves them—do not swap that name for vague words like "figure", "deity", or "the character".`
+        : `- When the scene intent names a focal figure, keep that proper name exactly—do not substitute vague words like "figure" or "the character".`,
       "- Mounts and companions: If the scene intent names another entity (mount, companion, secondary figure, animal, object-as-character), preserve that name and role exactly as given. Never substitute the focal character name for a different named entity—keep each proper name distinct.",
       "- Follow the user's scene intent literally for who does what with whom (seated on, riding, beside, etc.).",
       "- No dialogue, no narration, no subtitles, no on-screen text.",
       "",
-      `Selected focal character (first Step 1 row — use this exact name when beats center this figure): ${godName}`,
+      godName
+        ? `Selected focal character (first Step 1 row — use this exact name when beats center this figure): ${godName}`
+        : "No deity row selected in Step 1 — take all figure names only from the scene intent below.",
       ...(allFigureNames.length > 1
         ? [
             `All locked figures (keep each name distinct in beats — never merge two entities): ${allFigureNames.join(", ")}`,
@@ -944,7 +941,9 @@
       "",
       allFigureNames.length > 1
         ? "Across the beats as a whole, every locked figure listed above should appear by name where relevant—do not collapse two entities into one name."
-        : "Across the beats as a whole, the focal deity should appear by name where they act; any mount/companion named in the scene intent must appear by name where relevant—do not collapse two entities into one name.",
+        : godName || allFigureNames.length
+          ? "Across the beats as a whole, the focal deity should appear by name where they act; any mount/companion named in the scene intent must appear by name where relevant—do not collapse two entities into one name."
+          : "Across the beats as a whole, preserve every proper name from the scene intent—do not collapse distinct entities into one name.",
       "Keep beats physically visual and actionable (camera-relevant), short, and coherent for a single short scene.",
       "Return only the two sections above. No extra commentary.",
     ].join("\n").trim();
@@ -1107,11 +1106,20 @@
     const godName = makeInput("dialog-new-god-name", "");
     const versionName = makeInput("dialog-new-god-version", "");
     const prompt = makeTextarea("dialog-new-god-prompt", "", 5);
+    const existingWrap = fieldWrap("Existing god", existing);
+    const godNameWrap = fieldWrap("New god name or id", godName);
+    function syncAddGodDialogFields() {
+      const isNewGod = mode.value === "god";
+      existingWrap.hidden = isNewGod;
+      godNameWrap.hidden = !isNewGod;
+    }
+    mode.addEventListener("change", syncAddGodDialogFields);
     body.appendChild(fieldWrap("Action", mode));
-    body.appendChild(fieldWrap("Existing god", existing));
-    body.appendChild(fieldWrap("New god name or id", godName));
+    body.appendChild(existingWrap);
+    body.appendChild(godNameWrap);
     body.appendChild(fieldWrap("Version name or id", versionName));
     body.appendChild(fieldWrap("Character + video lock", prompt));
+    syncAddGodDialogFields();
     openDialog("Add God or Version", body, () => {
       const doc = cloneJson(godsDoc);
       if (!Array.isArray(doc.gods)) doc.gods = [];
@@ -1157,10 +1165,7 @@
         text: card.querySelector(".lock-ta")?.value?.trim() || "",
       }))
       .filter((row) => row.godId && row.versionId);
-    if (!updates.length) {
-      showToast("Select god and version");
-      return;
-    }
+    if (!updates.length) return;
     const doc = cloneJson(cat()?.gods || { gods: [] });
     let saved = 0;
     for (const row of updates) {
@@ -1297,10 +1302,7 @@
     const backgroundId = bgSelect.value?.trim();
     const versionId = bgVersionSelect.value?.trim();
     const text = bgLock.value?.trim() || "";
-    if (!backgroundId || !versionId) {
-      showToast("Select background and version");
-      return;
-    }
+    if (!backgroundId || !versionId) return;
     const doc = cloneJson(cat()?.backgrounds || { backgrounds: [] });
     const bg = doc.backgrounds?.find((b) => b.id === backgroundId);
     const version = bg?.versions?.find((v) => v.id === versionId);
@@ -1701,7 +1703,7 @@
       return;
     }
     rowsHost.replaceChildren();
-    addCharacterRow({ godId: "shiva", versionId: "version1" });
+    addCharacterRow({});
     initBackgroundUI();
     initChips();
     fillVideoStyle();
