@@ -265,6 +265,8 @@ textarea {
   min-height: 100px;
   resize: vertical;
   line-height: 1.4;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .textarea-with-tools {

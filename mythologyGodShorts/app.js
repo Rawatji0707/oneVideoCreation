@@ -121,6 +121,31 @@
     }
   }
 
+  function selectAllInTextarea(el) {
+    if (!el || el.tagName !== "TEXTAREA") return;
+    const len = el.value.length;
+    const apply = () => {
+      try {
+        el.focus({ preventScroll: true });
+      } catch {
+        el.focus();
+      }
+      if (typeof el.setSelectionRange === "function") {
+        try {
+          el.setSelectionRange(0, len);
+        } catch {
+          el.select();
+        }
+      } else if (typeof el.select === "function") {
+        el.select();
+      }
+    };
+    apply();
+    queueMicrotask(apply);
+    window.setTimeout(apply, 0);
+    window.setTimeout(apply, 100);
+  }
+
   function attachTextareaTools(ta) {
     if (!ta || ta.dataset.taTools === "1") return;
     const parent = ta.parentNode;
@@ -132,7 +157,16 @@
     const toolbar = document.createElement("div");
     toolbar.className = "textarea-toolbar";
     toolbar.setAttribute("role", "toolbar");
-    toolbar.setAttribute("aria-label", "Copy to clipboard");
+    toolbar.setAttribute("aria-label", "Textarea actions");
+    const btnSelectAll = document.createElement("button");
+    btnSelectAll.type = "button";
+    btnSelectAll.className = "btn-small btn-ta-tool";
+    btnSelectAll.textContent = "Select all";
+    btnSelectAll.setAttribute("aria-label", "Select all text in this field");
+    btnSelectAll.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      selectAllInTextarea(ta);
+    });
     const btnCopy = document.createElement("button");
     btnCopy.type = "button";
     btnCopy.className = "btn-small btn-ta-tool btn-ta-tool-accent";
@@ -142,6 +176,7 @@
       const ok = await copyRawText(ta.value);
       showToast(ok ? "Copied" : "Copy failed");
     });
+    toolbar.appendChild(btnSelectAll);
     toolbar.appendChild(btnCopy);
     wrap.appendChild(toolbar);
     wrap.appendChild(ta);
