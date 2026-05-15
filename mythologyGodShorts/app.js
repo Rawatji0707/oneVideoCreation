@@ -94,6 +94,63 @@
     }
   }
 
+  async function copyRawText(text) {
+    const s = String(text ?? "");
+    if (!s) {
+      showToast("Nothing to copy");
+      return false;
+    }
+    try {
+      await navigator.clipboard.writeText(s);
+      return true;
+    } catch {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = s;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        return ok;
+      } catch {
+        return false;
+      }
+    }
+  }
+
+  function attachTextareaTools(ta) {
+    if (!ta || ta.dataset.taTools === "1") return;
+    const parent = ta.parentNode;
+    if (!parent) return;
+    ta.dataset.taTools = "1";
+    const wrap = document.createElement("div");
+    wrap.className = "textarea-with-tools";
+    parent.insertBefore(wrap, ta);
+    const toolbar = document.createElement("div");
+    toolbar.className = "textarea-toolbar";
+    toolbar.setAttribute("role", "toolbar");
+    toolbar.setAttribute("aria-label", "Copy to clipboard");
+    const btnCopy = document.createElement("button");
+    btnCopy.type = "button";
+    btnCopy.className = "btn-small btn-ta-tool btn-ta-tool-accent";
+    btnCopy.textContent = "Copy";
+    btnCopy.setAttribute("aria-label", "Copy this field to clipboard");
+    btnCopy.addEventListener("click", async () => {
+      const ok = await copyRawText(ta.value);
+      showToast(ok ? "Copied" : "Copy failed");
+    });
+    toolbar.appendChild(btnCopy);
+    wrap.appendChild(toolbar);
+    wrap.appendChild(ta);
+  }
+
+  function wireMainPageTextareas() {
+    document.querySelectorAll("main textarea").forEach((ta) => attachTextareaTools(ta));
+  }
+
   function cloneJson(value) {
     return JSON.parse(JSON.stringify(value));
   }
@@ -258,6 +315,7 @@
     }
     if (catalogDialogTitle) catalogDialogTitle.textContent = title;
     catalogDialogBody.replaceChildren(body);
+    body.querySelectorAll("textarea").forEach((ta) => attachTextareaTools(ta));
     if (catalogDialogSave) catalogDialogSave.textContent = saveText || "Save";
     activeDialogSave = onSave;
     setDialogError("");
@@ -517,6 +575,15 @@
     const ver = findVersion(god, verId);
     if (ver) {
       ta.value = String(ver.videoLock || ver.characterBrief || "").trim();
+    } else {
+      ta.value = "";
+    }
+    ta.dispatchEvent(new Event("input", { bubbles: true }));
+
+    const cards = document.querySelectorAll("#character-rows .character-card");
+    if (cards.length === 1 && p1OptionalNotes && card === cards[0] && (!godId || !verId)) {
+      p1OptionalNotes.value = "";
+      p1OptionalNotes.dispatchEvent(new Event("input", { bubbles: true }));
     }
   }
 
@@ -591,6 +658,7 @@
       card.remove();
       refreshRemoveButtons();
     });
+    attachTextareaTools(card.querySelector(".lock-ta"));
     refreshRemoveButtons();
   }
 
@@ -661,6 +729,7 @@
     bgVersionSelect.appendChild(ph);
     if (!bg || !Array.isArray(bg.versions) || !bg.versions.length) {
       bgVersionSelect.disabled = true;
+      syncBgLock();
       return;
     }
     bgVersionSelect.disabled = false;
@@ -680,11 +749,21 @@
   function syncBgLock() {
     const bid = bgSelect.value?.trim();
     const vid = bgVersionSelect.value?.trim();
-    const bg = cat()?.backgrounds?.backgrounds?.find((b) => b && b.id === bid);
-    const ver = bg && Array.isArray(bg.versions) ? bg.versions.find((v) => v && v.id === vid) : null;
-    if (ver) {
-      bgLock.value = String(ver.videoLock || ver.characterBrief || "").trim();
+    const bg = bid ? cat()?.backgrounds?.backgrounds?.find((b) => b && b.id === bid) : null;
+    const ver = bg && vid && Array.isArray(bg.versions) ? bg.versions.find((v) => v && v.id === vid) : null;
+    if (!bid || !vid || !ver) {
+      if (bgLock) {
+        bgLock.value = "";
+        bgLock.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      if (bgOptionalNotes) {
+        bgOptionalNotes.value = "";
+        bgOptionalNotes.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      return;
     }
+    bgLock.value = String(ver.videoLock || ver.characterBrief || "").trim();
+    bgLock.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
   function readJsonKeys(hidden, fallback) {
@@ -1711,6 +1790,7 @@
     wirePriorityControlsOnce();
     applyEditingState();
     wireEditingStateAutosave();
+    wireMainPageTextareas();
   }
 
   async function bootstrap() {
