@@ -197,7 +197,6 @@
   /**
    * @param {{ label: string, videoLock: string }[]} gods
    * @param {{ label: string, videoLock: string } | null} background
-   * @param {{ optionalNotes?: string }} bgExtra
    * @param {*} prompt3
    * @param {*} videoCatalog
    */
@@ -680,7 +679,6 @@
   function buildPrompt1(gods) {
     const list = Array.isArray(gods) ? gods.filter((g) => g && String(g.label || "").trim()) : [];
     const god = list[0] || null;
-    const optionalNotes = list.length === 1 ? String(list[0].optionalNotes || "").trim() : "";
 
     if (!list.length || !god) {
       return [
@@ -703,7 +701,7 @@
         : `Keep ${g.label} consistent with how they are usually depicted.`;
     });
 
-    let para = [
+    const para = [
       "A brief realistic video set on an open green grassland in soft daylight, with a calm sky and gentle horizon and nothing crowded in the frame.",
       figureIntro,
       ...lockParts,
@@ -714,15 +712,10 @@
       "Do not add subtitles, captions, or spoken dialogue; this should read as a quiet, visual moment.",
     ].join(" ");
 
-    if (list.length === 1 && optionalNotes.length > 0) {
-      para += ` Also keep in mind: ${optionalNotes}`;
-    }
-
     return para.replace(/\s+/g, " ").trim();
   }
 
-  function buildPrompt2(background, optionalNotes) {
-    const notes = String(optionalNotes || "").trim();
+  function buildPrompt2(background) {
     const lock = String(background?.videoLock || "").trim();
     if (!lock) {
       return [
@@ -732,17 +725,13 @@
       ].join("\n");
     }
     const label = String(background?.label || "Setting").trim();
-    let para = [
+    const para = [
       "A brief realistic video that establishes only the place and atmosphere—no characters, crowds, or dialogue.",
       `The location is ${label}.`,
       `Show the environment with this look: ${lock}`,
       "Use a calm establishing composition: wide or medium-wide framing, steady camera or a very slight slow drift—avoid whip pans, handheld shake, or flashy transitions.",
       "Do not add subtitles, captions, or spoken narration; this should read as a quiet visual study of the setting.",
     ].join(" ");
-
-    if (notes.length > 0) {
-      para += ` Also keep in mind: ${notes}`;
-    }
 
     return para.replace(/\s+/g, " ").trim();
   }

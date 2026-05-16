@@ -22,13 +22,10 @@
 
   const rowsHost = document.getElementById("character-rows");
   const btnAddChar = document.getElementById("btn-add-character");
-  const fieldP1Notes = document.getElementById("field-p1-notes");
-  const p1OptionalNotes = document.getElementById("p1-optional-notes");
   const p2SceneInput = document.getElementById("p2-scene-input");
   const bgSelect = document.getElementById("bg-select");
   const bgVersionSelect = document.getElementById("bg-version-select");
   const bgLock = document.getElementById("bg-lock");
-  const bgOptionalNotes = document.getElementById("bg-optional-notes");
   const camHidden = document.getElementById("cam-keys");
   const camChips = document.getElementById("cam-chips");
   const camAdd = document.getElementById("cam-add");
@@ -418,19 +415,22 @@
   }
 
   function collectEditingFields() {
-    const rows = [...document.querySelectorAll("#character-rows .character-card")].map((card) => ({
-      godId: card.querySelector(".god-sel")?.value?.trim() || "",
-      versionId: card.querySelector(".ver-sel")?.value?.trim() || "",
-      lockText: card.querySelector(".lock-ta")?.value || "",
-    }));
+    const rows = [...document.querySelectorAll("#character-rows .character-card")].map((card) => {
+      const godIds = getSelectedGodIds(card);
+      const legacyGod = godIds.length === 1 ? godIds[0] : "";
+      return {
+        godIds,
+        godId: legacyGod,
+        versionId: card.querySelector(".ver-sel")?.value?.trim() || "",
+        lockText: card.querySelector(".lock-ta")?.value || "",
+      };
+    });
     return {
       characterRows: rows,
-      "p1-optional-notes": p1OptionalNotes?.value || "",
       "p2-scene-input": p2SceneInput?.value || "",
       "bg-select": bgSelect?.value || "",
       "bg-version-select": bgVersionSelect?.value || "",
       "bg-lock": bgLock?.value || "",
-      "bg-optional-notes": bgOptionalNotes?.value || "",
       "p3-performance": document.getElementById("p3-performance")?.value || "",
       "p3-atmosphere": document.getElementById("p3-atmosphere")?.value || "",
       "cam-keys": camHidden?.value || "",
@@ -467,15 +467,19 @@
       if (Array.isArray(fields.characterRows) && fields.characterRows.length) {
         rowsHost.replaceChildren();
         for (const row of fields.characterRows) {
+          const ids =
+            Array.isArray(row.godIds) && row.godIds.length
+              ? row.godIds
+              : row.godId
+                ? [String(row.godId).trim()].filter(Boolean)
+                : [];
           addCharacterRow({
-            godId: row.godId,
+            godIds: ids,
+            godId: ids[0] || "",
             versionId: row.versionId,
             lockText: row.lockText,
           });
         }
-      }
-      if (p1OptionalNotes && fields["p1-optional-notes"] != null) {
-        p1OptionalNotes.value = String(fields["p1-optional-notes"]);
       }
       const savedSceneInfo =
         fields["p2-scene-input"] != null
@@ -491,9 +495,6 @@
         refreshBackgroundControls({ backgroundId: bgId, versionId: bgVersionId });
       }
       if (bgLock && fields["bg-lock"] != null) bgLock.value = String(fields["bg-lock"]);
-      if (bgOptionalNotes && fields["bg-optional-notes"] != null) {
-        bgOptionalNotes.value = String(fields["bg-optional-notes"]);
-      }
 
       setSelectValue(document.getElementById("p3-performance"), fields["p3-performance"]);
       setSelectValue(document.getElementById("p3-atmosphere"), fields["p3-atmosphere"]);
@@ -522,12 +523,10 @@
 
   function wireEditingStateAutosave() {
     const ids = [
-      "p1-optional-notes",
       "p2-scene-input",
       "bg-select",
       "bg-version-select",
       "bg-lock",
-      "bg-optional-notes",
       "p3-performance",
       "p3-atmosphere",
       "cam-keys",
@@ -564,19 +563,74 @@
     return god.versions.find((v) => v && v.id === versionId) || null;
   }
 
-  function fillGodSelect(sel) {
-    const gods = cat()?.gods?.gods || [];
-    sel.replaceChildren();
-    const ph = document.createElement("option");
-    ph.value = "";
-    ph.textContent = "None";
-    sel.appendChild(ph);
-    for (const g of gods) {
-      const o = document.createElement("option");
-      o.value = g.id;
-      o.textContent = g.label || g.id;
-      sel.appendChild(o);
+  function findVersionOrFallback(god, versionId) {
+    if (!god || !Array.isArray(god.versions) || !god.versions.length) return null;
+    const want = String(versionId || "").trim();
+    if (want) {
+      const v = god.versions.find((x) => x && x.id === want);
+      if (v) return v;
     }
+    for (let i = god.versions.length - 1; i >= 0; i--) {
+      const v = god.versions[i];
+      if (v?.id) return v;
+    }
+    return null;
+  }
+
+  /** Lock text for a catalog version; legacy JSON may only have `characterBrief`. */
+  function catalogVersionLock(ver) {
+    if (!ver || typeof ver !== "object") return "";
+    const primary = String(ver.videoLock || "").trim();
+    if (primary) return primary;
+    return String(ver.characterBrief || "").trim();
+  }
+
+  function getSelectedGodIds(card) {
+    if (!card) return [];
+    const box = card.querySelector(".god-multi-box");
+    if (!box) return [];
+    return [...box.querySelectorAll(".god-multi-cb:checked")]
+      .map((cb) => String(cb.value || "").trim())
+      .filter(Boolean);
+  }
+
+  function fillGodMultiBox(box, selectedIds) {
+    if (!box) return;
+    box.replaceChildren();
+    const want = new Set((Array.isArray(selectedIds) ? selectedIds : []).map((id) => String(id || "").trim()).filter(Boolean));
+    const gods = cat()?.gods?.gods || [];
+    for (const g of gods) {
+      if (!g?.id) continue;
+      const row = document.createElement("label");
+      row.className = "god-multi-row";
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.className = "god-multi-cb";
+      cb.value = g.id;
+      cb.checked = want.has(g.id);
+      const span = document.createElement("span");
+      span.className = "god-multi-label-text";
+      span.textContent = g.label || g.id;
+      row.appendChild(cb);
+      row.appendChild(span);
+      box.appendChild(row);
+    }
+  }
+
+  function applyGodNameReplacements(text, gods) {
+    let s = String(text ?? "");
+    const pairs = (Array.isArray(gods) ? gods : [])
+      .map((g) => ({
+        label: String(g?.label || "").trim(),
+        lock: String(g?.videoLock || "").trim(),
+      }))
+      .filter((p) => p.label && p.lock);
+    pairs.sort((a, b) => b.label.length - a.label.length);
+    for (const { label, lock } of pairs) {
+      if (!s.includes(label)) continue;
+      s = s.split(label).join(lock);
+    }
+    return s;
   }
 
   function fillVersionSelect(godId, sel, preferredVersionId) {
@@ -602,40 +656,46 @@
   }
 
   function syncLockFromRow(card) {
-    const godId = card.querySelector(".god-sel")?.value?.trim();
+    const godIds = getSelectedGodIds(card);
     const verId = card.querySelector(".ver-sel")?.value?.trim();
     const ta = card.querySelector(".lock-ta");
     if (!ta) return;
-    const god = findGod(godId);
-    const ver = findVersion(god, verId);
-    if (ver) {
-      ta.value = String(ver.videoLock || ver.characterBrief || "").trim();
-    } else {
+
+    if (godIds.length === 0) {
       ta.value = "";
+    } else if (godIds.length === 1) {
+      const god = findGod(godIds[0]);
+      const ver = god && verId ? findVersion(god, verId) : null;
+      if (ver) {
+        ta.value = catalogVersionLock(ver);
+      } else {
+        ta.value = "";
+      }
+    } else {
+      const parts = [];
+      for (const gid of godIds) {
+        const god = findGod(gid);
+        if (!god) continue;
+        const ver = findVersionOrFallback(god, verId);
+        const line = ver ? catalogVersionLock(ver) : "";
+        const name = String(god.label || god.id).trim();
+        if (line) parts.push(`[${name}]\n${line}`);
+      }
+      ta.value = parts.join("\n\n");
     }
     ta.dispatchEvent(new Event("input", { bubbles: true }));
-
-    const cards = document.querySelectorAll("#character-rows .character-card");
-    if (cards.length === 1 && p1OptionalNotes && card === cards[0] && (!godId || !verId)) {
-      p1OptionalNotes.value = "";
-      p1OptionalNotes.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-  }
-
-  function updateP1NotesVisibility() {
-    const n = document.querySelectorAll("#character-rows .character-card").length;
-    if (fieldP1Notes) fieldP1Notes.hidden = n !== 1;
   }
 
   function wireCharacterCard(card) {
-    const gSel = card.querySelector(".god-sel");
+    const box = card.querySelector(".god-multi-box");
     const vSel = card.querySelector(".ver-sel");
-    if (!gSel || !vSel) return;
-    fillGodSelect(gSel);
-    gSel.addEventListener("change", () => {
-      fillVersionSelect(gSel.value, vSel, "");
+    if (!box || !vSel) return;
+    const onGodChange = () => {
+      const ids = getSelectedGodIds(card);
+      fillVersionSelect(ids[0] || "", vSel, "");
       syncLockFromRow(card);
-    });
+    };
+    box.addEventListener("change", onGodChange);
     vSel.addEventListener("change", () => {
       syncLockFromRow(card);
     });
@@ -650,7 +710,6 @@
       const lab = c.querySelector(".fig-label");
       if (lab) lab.textContent = `Figure ${i + 1}`;
     });
-    updateP1NotesVisibility();
   }
 
   function addCharacterRow(preferred) {
@@ -663,8 +722,8 @@
       </div>
       <div class="row-grid two">
         <div class="field">
-          <label class="god-label">Deity</label>
-          <select class="god-sel" aria-label="Deity"></select>
+          <label class="god-label">God theme</label>
+          <div class="god-multi-box" role="group" aria-label="God theme — select one or more"></div>
         </div>
         <div class="field">
           <label class="ver-label">Version</label>
@@ -678,11 +737,16 @@
     `;
     rowsHost.appendChild(card);
     wireCharacterCard(card);
-    const gSel = card.querySelector(".god-sel");
+    const box = card.querySelector(".god-multi-box");
     const vSel = card.querySelector(".ver-sel");
-    const gid = String(preferred?.godId || "").trim();
-    if (gid && [...gSel.options].some((o) => o.value === gid)) gSel.value = gid;
-    fillVersionSelect(gSel.value, vSel, preferred?.versionId || "");
+    const prefIds =
+      Array.isArray(preferred?.godIds) && preferred.godIds.length
+        ? preferred.godIds
+        : preferred?.godId
+          ? [String(preferred.godId).trim()].filter(Boolean)
+          : [];
+    fillGodMultiBox(box, prefIds);
+    fillVersionSelect(prefIds[0] || "", vSel, preferred?.versionId || "");
     if (preferred?.lockText != null) {
       card.querySelector(".lock-ta").value = String(preferred.lockText);
     } else {
@@ -704,18 +768,21 @@
       return;
     }
     cards.forEach((card, index) => {
-      const gSel = card.querySelector(".god-sel");
+      const box = card.querySelector(".god-multi-box");
       const vSel = card.querySelector(".ver-sel");
-      if (!gSel || !vSel) return;
-      const oldGod = gSel.value?.trim();
+      if (!box || !vSel) return;
+      const oldIds = getSelectedGodIds(card);
       const oldVersion = vSel.value?.trim();
-      const nextGod = index === 0 && preferred?.godId ? preferred.godId : oldGod;
+      const prefGodIds =
+        index === 0 && Array.isArray(preferred?.godIds) && preferred.godIds.length
+          ? preferred.godIds
+          : index === 0 && preferred?.godId
+            ? [String(preferred.godId).trim()].filter(Boolean)
+            : oldIds;
       const nextVersion = index === 0 && preferred?.versionId ? preferred.versionId : oldVersion;
-      fillGodSelect(gSel);
-      if (nextGod && [...gSel.options].some((o) => o.value === nextGod)) {
-        gSel.value = nextGod;
-      }
-      fillVersionSelect(gSel.value, vSel, nextVersion);
+      fillGodMultiBox(box, prefGodIds);
+      const firstId = getSelectedGodIds(card)[0] || "";
+      fillVersionSelect(firstId, vSel, nextVersion);
       syncLockFromRow(card);
     });
     refreshRemoveButtons();
@@ -791,13 +858,9 @@
         bgLock.value = "";
         bgLock.dispatchEvent(new Event("input", { bubbles: true }));
       }
-      if (bgOptionalNotes) {
-        bgOptionalNotes.value = "";
-        bgOptionalNotes.dispatchEvent(new Event("input", { bubbles: true }));
-      }
       return;
     }
-    bgLock.value = String(ver.videoLock || ver.characterBrief || "").trim();
+    bgLock.value = catalogVersionLock(ver);
     bgLock.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
@@ -953,25 +1016,38 @@
 
   function collectGods() {
     const cards = [...document.querySelectorAll("#character-rows .character-card")];
-    const optional = p1OptionalNotes ? String(p1OptionalNotes.value || "").trim() : "";
     const out = [];
     for (const card of cards) {
-      const godId = card.querySelector(".god-sel")?.value?.trim() || "";
+      const godIds = getSelectedGodIds(card);
       const verId = card.querySelector(".ver-sel")?.value?.trim() || "";
       const lockTa = String(card.querySelector(".lock-ta")?.value || "").trim();
-      const god = godId ? findGod(godId) : null;
-      const ver = god && verId ? findVersion(god, verId) : null;
-      if (godId && !god) continue;
-      if (godId && verId && !ver) continue;
-      if (godId && !verId && !lockTa) continue;
-      if (!godId && !lockTa) continue;
-      const catalogLock = ver ? String(ver.videoLock || ver.characterBrief || "").trim() : "";
-      const videoLock = lockTa || catalogLock;
-      const label = god ? String(god.label || god.id).trim() : "Character";
-      out.push({ label, videoLock });
-    }
-    if (out.length === 1 && optional) {
-      out[0].optionalNotes = optional;
+
+      if (godIds.length === 0) {
+        if (lockTa) out.push({ label: "Character", videoLock: lockTa });
+        continue;
+      }
+
+      if (godIds.length === 1) {
+        const god = findGod(godIds[0]);
+        const ver = god && verId ? findVersion(god, verId) : null;
+        if (godIds[0] && !god) continue;
+        if (godIds[0] && verId && !ver) continue;
+        if (godIds[0] && !verId && !lockTa) continue;
+        const catalogLock = ver ? catalogVersionLock(ver) : "";
+        const videoLock = lockTa || catalogLock;
+        const label = god ? String(god.label || god.id).trim() : "Character";
+        out.push({ label, videoLock });
+        continue;
+      }
+
+      for (const gid of godIds) {
+        const god = findGod(gid);
+        if (!god) continue;
+        const ver = findVersionOrFallback(god, verId);
+        const videoLock = ver ? catalogVersionLock(ver) : "";
+        const label = String(god.label || god.id).trim();
+        if (label) out.push({ label, videoLock });
+      }
     }
     return out;
   }
@@ -1015,9 +1091,8 @@
       "- Keep proper names exactly as provided.",
       "",
       "TASK:",
-      "Create output for TWO fields only:",
-      "1) Optional notes (English) — background/environment only.",
-      "2) Priority scene beats — concise action beats for motion and camera timing.",
+      "Create output for ONE field only:",
+      "Priority scene beats — concise action beats for motion and camera timing. Weave setting, atmosphere, terrain, light, weather, scale, and environment motion into the beats where relevant (do not add a separate environment paragraph).",
       "",
       "HARD RULES (NON-NEGOTIABLE):",
       "- Do NOT describe character appearance, anatomy, clothes, ornaments, face, body, age, skin, or any deity characteristics.",
@@ -1044,9 +1119,6 @@
       sceneInfo,
       "",
       "FORMAT YOUR RESPONSE EXACTLY AS:",
-      "Optional notes (English):",
-      "<one compact paragraph focused only on setting, atmosphere, terrain, light, weather, scale, and motion in environment>",
-      "",
       "Priority scene beats:",
       "- <beat 1 — clear motion + camera; use proper names from scene intent (focal deity + any named mount/companion)>",
       "- <beat 2>",
@@ -1059,7 +1131,7 @@
           ? "Across the beats as a whole, the focal deity should appear by name where they act; any mount/companion named in the scene intent must appear by name where relevant—do not collapse two entities into one name."
           : "Across the beats as a whole, preserve every proper name from the scene intent—do not collapse distinct entities into one name.",
       "Keep beats physically visual and actionable (camera-relevant), short, and coherent for a single short scene.",
-      "Return only the two sections above. No extra commentary.",
+      "Return only the section above. No extra commentary.",
     ].join("\n").trim();
   }
 
@@ -1202,7 +1274,7 @@
   function openAddGodDialog() {
     const godsDoc = cat()?.gods || { gods: [] };
     const currentCard = selectedCharacterCard();
-    const currentGod = currentCard?.querySelector(".god-sel")?.value?.trim() || "";
+    const currentGod = getSelectedGodIds(currentCard || null)[0] || "";
     const body = document.createElement("div");
     const mode = makeSelect(
       "dialog-god-mode",
@@ -1232,7 +1304,7 @@
     body.appendChild(existingWrap);
     body.appendChild(godNameWrap);
     body.appendChild(fieldWrap("Version name or id", versionName));
-    body.appendChild(fieldWrap("Character + video lock", prompt));
+    body.appendChild(fieldWrap("Video lock", prompt));
     syncAddGodDialogFields();
     openDialog("Add God or Version", body, () => {
       const doc = cloneJson(godsDoc);
@@ -1247,7 +1319,6 @@
       const version = {
         id: versionId,
         label: versionRaw,
-        characterBrief: promptText,
         videoLock: promptText,
       };
       let godId = "";
@@ -1265,20 +1336,22 @@
         god.versions.push(version);
       }
       saveGodsDoc(doc);
-      refreshCharacterControls({ godId, versionId });
+      refreshCharacterControls({ godIds: [godId], versionId });
       showToast("God JSON saved locally");
     });
   }
 
   function updateSelectedGodVersion() {
     const cards = [...document.querySelectorAll("#character-rows .character-card")];
-    const updates = cards
-      .map((card) => ({
-        godId: card.querySelector(".god-sel")?.value?.trim(),
-        versionId: card.querySelector(".ver-sel")?.value?.trim(),
-        text: card.querySelector(".lock-ta")?.value?.trim() || "",
-      }))
-      .filter((row) => row.godId && row.versionId);
+    const updates = [];
+    for (const card of cards) {
+      const godIds = getSelectedGodIds(card);
+      const versionId = card.querySelector(".ver-sel")?.value?.trim();
+      const text = card.querySelector(".lock-ta")?.value?.trim() || "";
+      for (const godId of godIds) {
+        if (godId && versionId) updates.push({ godId, versionId, text });
+      }
+    }
     if (!updates.length) return;
     const doc = cloneJson(cat()?.gods || { gods: [] });
     let saved = 0;
@@ -1286,8 +1359,8 @@
       const god = doc.gods?.find((g) => g.id === row.godId);
       const version = god?.versions?.find((v) => v.id === row.versionId);
       if (!version) continue;
-      version.characterBrief = row.text;
       version.videoLock = row.text;
+      delete version.characterBrief;
       saved += 1;
     }
     if (!saved) {
@@ -1295,13 +1368,13 @@
       return;
     }
     saveGodsDoc(doc);
-    refreshCharacterControls({ godId: updates[0].godId, versionId: updates[0].versionId });
+    refreshCharacterControls();
     showToast(`${saved} god version(s) updated locally`);
   }
 
   function openDeleteGodDialog() {
     const godsDoc = cat()?.gods || { gods: [] };
-    const currentGod = selectedCharacterCard()?.querySelector(".god-sel")?.value?.trim() || "";
+    const currentGod = getSelectedGodIds(selectedCharacterCard() || null)[0] || "";
     const body = document.createElement("div");
     const mode = makeSelect(
       "dialog-delete-god-mode",
@@ -1390,7 +1463,6 @@
       const version = {
         id: versionId,
         label: versionRaw,
-        characterBrief: promptText,
         videoLock: promptText,
       };
       let backgroundId = "";
@@ -1424,8 +1496,8 @@
       showToast("Version not found");
       return;
     }
-    version.characterBrief = text;
     version.videoLock = text;
+    delete version.characterBrief;
     saveBackgroundsDoc(doc);
     refreshBackgroundControls({ backgroundId, versionId });
     showToast("Background version updated locally");
@@ -1589,7 +1661,8 @@
   document.getElementById("copy-p1")?.addEventListener("click", async () => {
     if (!eng()) return;
     const gods = collectGods();
-    const text = eng().buildPrompt1(gods);
+    const raw = eng().buildPrompt1(gods);
+    const text = applyGodNameReplacements(raw, gods);
     const ok = await copyText(text);
     showToast(ok ? "Copied" : "Copy failed");
   });
@@ -1602,16 +1675,19 @@
 
   document.getElementById("copy-p2")?.addEventListener("click", async () => {
     if (!eng()) return;
+    const gods = collectGods();
     const bg = collectBackground();
-    const notes = String(bgOptionalNotes.value || "").trim();
-    const text = eng().buildPrompt2(bg, notes);
+    const raw = eng().buildPrompt2(bg);
+    const text = applyGodNameReplacements(raw, gods);
     const ok = await copyText(text);
     showToast(ok ? "Copied" : "Copy failed");
   });
 
   document.getElementById("copy-p3")?.addEventListener("click", async () => {
     if (!eng()) return;
-    const text = eng().buildPrompt3Merged(buildP3State());
+    const gods = collectGods();
+    const raw = eng().buildPrompt3Merged(buildP3State());
+    const text = applyGodNameReplacements(raw, gods);
     const ok = await copyText(text);
     showToast(ok ? "Copied" : "Copy failed");
   });
@@ -1751,6 +1827,13 @@
       videoStyle: videoStyleDoc,
     };
     window.MythologyMobilePriorityPresets = priorityPresets;
+    try {
+      saveStoredDoc(STORAGE_KEYS.gods, godsDoc);
+      saveStoredDoc(STORAGE_KEYS.backgrounds, bgDoc);
+      saveStoredDoc(STORAGE_KEYS.priorityBeats, { presets: priorityPresets });
+    } catch (err) {
+      console.warn("Mythology mobile: could not cache catalogs to localStorage.", err);
+    }
   }
 
   function populatePriorityPresets(preferredId) {

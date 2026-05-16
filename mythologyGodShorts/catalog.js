@@ -1,6 +1,7 @@
 /**
- * Default video style catalog + offline fallback for gods/backgrounds if JSON fetch fails.
- * Primary data: godCharacter.json, backgroundCharacter.json, prioritySceneBeats.json (loaded in app.js).
+ * Default video style + tiny offline fallback if JSON fetch fails (e.g. file://).
+ * Primary data: godCharacter.json, backgroundCharacter.json, prioritySceneBeats.json, VideoStyle.json, EditingState.json.
+ * Merged catalogs are cached in localStorage after load; clear storage + reload to refresh from JSON.
  */
 (function () {
   window.MythologyMobileDefaultVideoStyle = {
@@ -45,7 +46,6 @@
             {
               id: "version1",
               label: "version1 - basic",
-              characterBrief: "[Shiva] : divine male deity, serene meditative presence",
               videoLock: "[Shiva] : divine male deity, serene meditative presence",
             },
           ],
@@ -61,8 +61,6 @@
             {
               id: "version1",
               label: "version 1 - basic",
-              characterBrief:
-                "[Kailash] : snow-capped sacred peaks, crisp high-altitude light, quiet vast scale",
               videoLock:
                 "[Kailash] : snow-capped sacred peaks, crisp high-altitude light, quiet vast scale",
             },

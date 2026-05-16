@@ -18,7 +18,14 @@
       <h1>Mythology shorts</h1>
       <p>Build prompts, copy, paste into Grok</p>
       <div class="header-actions" aria-label="Reset actions">
-        <button type="button" class="btn-restart" id="restart-app-btn">Remove localstorage</button>
+        <button
+          type="button"
+          class="btn-restart"
+          id="restart-app-btn"
+          title="Clears saved catalogs and UI state, then reloads. Next load fetches godCharacter.json and other JSON from the site again."
+        >
+          Remove localstorage
+        </button>
         <button type="button" class="btn-restart btn-restart-secondary" id="reset-editing-state-top-btn">
           Reset editing state
         </button>
@@ -32,7 +39,7 @@
           <div class="panel-num" aria-hidden="true">1</div>
           <div class="panel-title">
             <h2 id="p1-title">Figures</h2>
-            <span>Grassland look-lock</span>
+            <span>Multi god theme + lock; Copy prompt replaces exact names with locks</span>
           </div>
         </div>
         <div class="panel-body">
@@ -47,21 +54,6 @@
             <button type="button" class="btn-small" id="god-export-btn">Export</button>
             <button type="button" class="btn-small" id="god-copy-json-btn">Copy</button>
             <button type="button" class="btn-small btn-danger" id="god-reset-btn">Reset</button>
-          </div>
-          <div class="field" id="field-p1-notes" hidden>
-            <div class="label-row">
-              <label for="p1-optional-notes">Optional notes</label>
-              <button
-                type="button"
-                class="hint-icon"
-                id="hint-p1-notes"
-                title="Merged into the Prompt 1 paragraph only when exactly one figure is selected. English keywords for jewellery, palette, mood."
-                aria-label="Help: optional notes for single figure"
-              >
-                ?
-              </button>
-            </div>
-            <textarea id="p1-optional-notes" rows="3" placeholder="" autocomplete="off"></textarea>
           </div>
           <button type="button" class="btn-copy" id="copy-p1">Copy prompt</button>
         </div>
@@ -83,7 +75,7 @@
               <button
                 type="button"
                 class="hint-icon"
-                title="Describe the action plainly. Copy Prompt creates a ChatGPT helper that returns Optional notes and Priority scene beats only."
+                title="Describe the action plainly. Copy Prompt creates a ChatGPT helper that returns Priority scene beats only."
                 aria-label="Help: basic scene information"
               >
                 ?
@@ -133,20 +125,6 @@
               </button>
             </div>
             <textarea id="bg-lock" rows="5" autocomplete="off"></textarea>
-          </div>
-          <div class="field">
-            <div class="label-row">
-              <label for="bg-optional-notes">Optional notes</label>
-              <button
-                type="button"
-                class="hint-icon"
-                title="Extra English keywords for weather, palette, scale. Appended to the Prompt 2 paragraph."
-                aria-label="Help: optional background notes"
-              >
-                ?
-              </button>
-            </div>
-            <textarea id="bg-optional-notes" rows="2" autocomplete="off"></textarea>
           </div>
           <div class="catalog-actions" aria-label="Background catalog actions">
             <button type="button" class="btn-small btn-accent" id="bg-add-btn">Add</button>
