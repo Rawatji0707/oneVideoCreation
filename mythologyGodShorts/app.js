@@ -48,6 +48,38 @@
     editingState: "mythologyGodShorts.EditingState.v1",
   };
 
+  function isLocalCatalogFileSyncOrigin() {
+    try {
+      const h = String(window.location.hostname || "").toLowerCase();
+      return h === "localhost" || h === "127.0.0.1" || h === "[::1]";
+    } catch {
+      return false;
+    }
+  }
+
+  let devCatalogWriteEndpointMissing = false;
+
+  async function tryDevCatalogFileWrite(filename, doc) {
+    if (!isLocalCatalogFileSyncOrigin() || devCatalogWriteEndpointMissing) return;
+    try {
+      const res = await fetch("/__dev/write-catalog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file: filename, doc }),
+      });
+      if (res.status === 404) {
+        devCatalogWriteEndpointMissing = true;
+        return;
+      }
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        console.warn("Mythology dev: write-catalog failed", res.status, t);
+      }
+    } catch (e) {
+      console.warn("Mythology dev: write-catalog request failed (is the Node dev server running?)", e);
+    }
+  }
+
   let baseGodsDoc = null;
   let baseBackgroundsDoc = null;
   let basePriorityDoc = null;
@@ -299,16 +331,19 @@
   function saveGodsDoc(doc) {
     saveStoredDoc(STORAGE_KEYS.gods, doc);
     window.MythologyMobileCatalog.gods = doc;
+    void tryDevCatalogFileWrite("godCharacter.json", doc);
   }
 
   function saveBackgroundsDoc(doc) {
     saveStoredDoc(STORAGE_KEYS.backgrounds, doc);
     window.MythologyMobileCatalog.backgrounds = doc;
+    void tryDevCatalogFileWrite("backgroundCharacter.json", doc);
   }
 
   function savePriorityDoc(doc) {
     saveStoredDoc(STORAGE_KEYS.priorityBeats, doc);
     window.MythologyMobilePriorityPresets = Array.isArray(doc.presets) ? doc.presets : [];
+    void tryDevCatalogFileWrite("prioritySceneBeats.json", doc);
   }
 
   function downloadJson(filename, doc) {
@@ -1091,8 +1126,9 @@
       "- Keep proper names exactly as provided.",
       "",
       "TASK:",
-      "Create output for ONE field only:",
-      "Priority scene beats — concise action beats for motion and camera timing. Weave setting, atmosphere, terrain, light, weather, scale, and environment motion into the beats where relevant (do not add a separate environment paragraph).",
+      "Create output for TWO fields only:",
+      "1) Background / environment (English) — one compact paragraph: setting, atmosphere, terrain, light, weather, scale, and motion in the environment only (no characters).",
+      "2) Priority scene beats — concise action beats for motion and camera timing (figures and action; do not repeat the full environment paragraph).",
       "",
       "HARD RULES (NON-NEGOTIABLE):",
       "- Do NOT describe character appearance, anatomy, clothes, ornaments, face, body, age, skin, or any deity characteristics.",
@@ -1119,6 +1155,9 @@
       sceneInfo,
       "",
       "FORMAT YOUR RESPONSE EXACTLY AS:",
+      "Background / environment (English):",
+      "<one compact paragraph focused only on setting, atmosphere, terrain, light, weather, scale, and motion in the environment—suitable as a place/atmosphere lock for video generation>",
+      "",
       "Priority scene beats:",
       "- <beat 1 — clear motion + camera; use proper names from scene intent (focal deity + any named mount/companion)>",
       "- <beat 2>",
@@ -1131,7 +1170,7 @@
           ? "Across the beats as a whole, the focal deity should appear by name where they act; any mount/companion named in the scene intent must appear by name where relevant—do not collapse two entities into one name."
           : "Across the beats as a whole, preserve every proper name from the scene intent—do not collapse distinct entities into one name.",
       "Keep beats physically visual and actionable (camera-relevant), short, and coherent for a single short scene.",
-      "Return only the section above. No extra commentary.",
+      "Return only the two sections above. No extra commentary.",
     ].join("\n").trim();
   }
 
@@ -1687,6 +1726,15 @@
     if (!eng()) return;
     const gods = collectGods();
     const raw = eng().buildPrompt3Merged(buildP3State());
+    const text = applyGodNameReplacements(raw, gods);
+    const ok = await copyText(text);
+    showToast(ok ? "Copied" : "Copy failed");
+  });
+
+  document.getElementById("copy-p3-image")?.addEventListener("click", async () => {
+    if (!eng()) return;
+    const gods = collectGods();
+    const raw = eng().buildPrompt3ImageSequence(buildP3State());
     const text = applyGodNameReplacements(raw, gods);
     const ok = await copyText(text);
     showToast(ok ? "Copied" : "Copy failed");

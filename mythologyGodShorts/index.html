@@ -75,7 +75,7 @@
               <button
                 type="button"
                 class="hint-icon"
-                title="Describe the action plainly. Copy Prompt creates a ChatGPT helper that returns Priority scene beats only."
+                title="Describe the action plainly. Copy Prompt creates a ChatGPT helper that returns a background/environment paragraph first, then Priority scene beats."
                 aria-label="Help: basic scene information"
               >
                 ?
@@ -307,7 +307,10 @@
             <button type="button" class="btn-small" id="beats-copy-json-btn">Copy</button>
             <button type="button" class="btn-small btn-danger" id="beats-reset-btn">Reset</button>
           </div>
-          <button type="button" class="btn-copy" id="copy-p3">Copy prompt</button>
+          <div class="copy-actions">
+            <button type="button" class="btn-copy" id="copy-p3">Copy Video Prompt</button>
+            <button type="button" class="btn-copy btn-copy-secondary" id="copy-p3-image">Copy Image Prompt</button>
+          </div>
         </div>
       </section>
     </main>

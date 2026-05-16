@@ -736,10 +736,135 @@
     return para.replace(/\s+/g, " ").trim();
   }
 
+  function buildPrompt3ImageSequence(state) {
+    const gods = state.gods || [];
+    const background = state.background || null;
+    const bgLock = String(background?.videoLock || "").trim();
+    const priorityRaw = String(state.prompt3?.priorityLines || "").trim();
+    if (!bgLock) {
+      return [
+        "Add text in the **Background lock** field (Step 2), then copy **Image Prompt** again.",
+        "",
+        "Image prompts need the place lock to keep all shots consistent.",
+      ].join("\n");
+    }
+    if (!priorityRaw) {
+      return [
+        "Add **Priority scene beats** (Step 3), then copy **Image Prompt** again.",
+        "",
+        "Those beats define the visual sequence for each camera angle.",
+      ].join("\n");
+    }
+
+    const perf = sceneChoice("performance", state.prompt3?.performance);
+    const atm = sceneChoice("atmosphere", state.prompt3?.atmosphere);
+    const cons = sceneChoice("constraints", state.prompt3?.constraints);
+    const camKeys = Array.isArray(state.prompt3?.cameraKeys)
+      ? state.prompt3.cameraKeys.map((k) => String(k).trim()).filter(Boolean)
+      : ["default_framing"];
+    const moodKeys = Array.isArray(state.prompt3?.moodKeys)
+      ? state.prompt3.moodKeys.map((k) => String(k).trim()).filter(Boolean)
+      : [];
+    const moodLines = moodLinesFromKeys(moodKeys);
+    const godList = gods.filter((g) => g && String(g.label || "").trim());
+    const multiFig = godList.length >= 2;
+
+    const lines = [
+      "You write prompts for high-quality AI image generation.",
+      "",
+      "OUTPUT LANGUAGE: STRICT ENGLISH ONLY.",
+      "- Write only in standard English.",
+      "- No Hindi/Sanskrit/Hinglish.",
+      "- Keep proper names exactly as provided.",
+      "",
+      "TASK:",
+      "Generate image prompts in a storyboard sequence for Instagram post images.",
+      `For EACH camera angle listed below, output exactly 3 images (Image 1 to Image 3) in chronological progression of the same scene.`,
+      "",
+      "GLOBAL RULES:",
+      "- Keep all locked figures and environment faithful across all images.",
+      "- Each image prompt should be a single compact paragraph suitable for image generation.",
+      "- No dialogue, subtitles, captions, watermarks, logos, text overlays, or UI text inside images.",
+      "- Keep continuity across Image 1..3 within each camera angle (same scene progression).",
+      "- Camera framing must follow each camera angle strictly.",
+      "- Use Priority scene beats as the primary action timeline.",
+      "",
+      ...(godList.length
+        ? [
+            "=== DEITY / FIGURE APPEARANCE — MUST NOT CHANGE (every image where they appear) ===",
+            "When a locked figure appears in any image prompt, their **visual identity is fixed** for the entire run:",
+            "- **Same appearance in Image 1 through Image 3** within each camera angle, and **the same appearance across every camera angle**—only pose, action, and framing may change.",
+            "- **Do not** alter face, skin tone, body build, hair/jata, ornaments, malas, weapons, serpent, cloth, markings (tripundra, third eye, etc.), or prop count unless the character lock explicitly allows variation.",
+            "- **Do not** simplify, omit, or “reinterpret” lock details for later images; carry the **same substantive lock wording** into each paragraph where that figure is visible (especially close and medium shots).",
+            "- **Do not** merge two locked figures into one hybrid body or swap one figure’s traits onto another.",
+            ...PROMPT3_VERBATIM_QUALIFIER_RULES,
+            "- If an image shows only environment with no figure, omit character description; if a figure is present, the lock applies fully.",
+            "",
+          ]
+        : []),
+      "=== PRIORITY SCENE BEATS (highest) ===",
+      priorityRaw,
+      "",
+      ...(godList.length
+        ? [
+            "=== LOCKED — CHARACTERS ===",
+            ...godList.flatMap((g, i) => {
+              const lock = String(g.videoLock || "").trim();
+              const prefix = godList.length > 1 ? `Figure ${i + 1}` : "Figure";
+              return [
+                `${prefix}: ${g.label}`,
+                lock ? `Character lock: ${lock}` : "Character lock: keep traditional depiction consistent.",
+                "",
+              ];
+            }),
+          ]
+        : []),
+      ...(multiFig ? [...PROMPT3_MULTI_FIGURE_SEPARATION_RULES] : []),
+      "=== LOCKED — ENVIRONMENT ===",
+      `Place: ${String(background?.label || "Setting").trim() || "Setting"}`,
+      `Environment lock: ${bgLock}`,
+      "",
+      ...(hasExpandLine(perf) ? ["=== PERFORMANCE ===", perf.text, ""] : []),
+      ...(hasExpandLine(atm) ? ["=== ATMOSPHERE ===", atm.text, ""] : []),
+      ...(hasExpandLine(cons) ? ["=== CONSTRAINTS ===", cons.text, ""] : []),
+      ...(moodLines.length ? ["=== MOOD TAGS ===", ...moodLines, ""] : []),
+      "=== IMAGE STYLE (use same style family as video) ===",
+      videoStyleLines(state.videoCatalog, state.prompt3?.videoMainId, state.prompt3?.videoSubId),
+      "",
+      "=== CAMERA ANGLES TO RENDER ===",
+    ];
+
+    for (const key of camKeys) {
+      const title = PROMPT3_CAMERA_OPTION_LABELS[key] || key;
+      const expanded = PROMPT3_SCENE_EXPAND.camera?.[key] || "Camera: (not specified)";
+      lines.push(`- ${title}`, expanded, "");
+    }
+
+    lines.push(
+      "OUTPUT FORMAT (STRICT):",
+      "For each camera angle, output exactly this structure:",
+      "Camera Angle: <exact camera title from the list>",
+      "Image 1: <prompt paragraph>",
+      "Image 2: <prompt paragraph>",
+      "Image 3: <prompt paragraph>",
+      "",
+      "Repeat the same block for every camera angle in the same order as listed.",
+      ...(godList.length
+        ? [
+            "In every `Image N:` line where a locked deity/figure is in frame, restate or embed their appearance from the character lock so generators cannot drift between shots.",
+          ]
+        : []),
+      "Return only these blocks. No explanations."
+    );
+
+    return lines.join("\n").trim();
+  }
+
   window.MythologyMobilePromptEngine = {
     buildPrompt1,
     buildPrompt2,
     buildPrompt3Merged,
+    buildPrompt3ImageSequence,
     PROMPT3_CAMERA_OPTION_LABELS,
     PROMPT3_MOOD_EXPAND,
   };

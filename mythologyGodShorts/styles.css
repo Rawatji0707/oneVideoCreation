@@ -522,6 +522,29 @@ button:focus-visible {
   transform: none;
 }
 
+.copy-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.copy-actions .btn-copy {
+  margin-top: 0;
+}
+
+.btn-copy-secondary {
+  color: #f4f7ff;
+  background: linear-gradient(135deg, #3b4b68, #2a3650);
+  box-shadow: 0 4px 20px rgba(30, 48, 84, 0.45);
+}
+
+@media (max-width: 430px) {
+  .copy-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
 .toast {
   position: fixed;
   left: 50%;
