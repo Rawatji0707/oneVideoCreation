@@ -292,9 +292,23 @@
             <button type="button" class="btn-small" id="beats-copy-json-btn">Copy</button>
             <button type="button" class="btn-small btn-danger" id="beats-reset-btn">Reset</button>
           </div>
-          <div class="copy-actions">
-            <button type="button" class="btn-copy" id="copy-p3">Copy Video Prompt</button>
-            <button type="button" class="btn-copy btn-copy-secondary" id="copy-p3-image">Copy Image Prompt</button>
+          <div class="copy-prompt-block">
+            <div class="copy-actions copy-actions-image">
+              <button type="button" class="btn-copy btn-copy-secondary" id="copy-p3-image">Copy Image Prompt</button>
+            </div>
+            <div class="video-lock-options" aria-label="Video prompt lock options">
+              <label class="dialog-check">
+                <input type="checkbox" id="p3-include-figure-lock" />
+                <span>Add Figure lock</span>
+              </label>
+              <label class="dialog-check">
+                <input type="checkbox" id="p3-include-environment-lock" />
+                <span>Add Environment lock</span>
+              </label>
+            </div>
+            <div class="copy-actions copy-actions-video">
+              <button type="button" class="btn-copy" id="copy-p3">Copy Video Prompt</button>
+            </div>
           </div>
         </div>
       </section>

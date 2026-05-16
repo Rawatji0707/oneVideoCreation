@@ -522,11 +522,30 @@ button:focus-visible {
   transform: none;
 }
 
+.copy-prompt-block {
+  margin-top: 14px;
+}
+
+.copy-actions-image,
+.copy-actions-video {
+  grid-template-columns: 1fr;
+}
+
+.video-lock-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin: 10px 0;
+}
+
+.video-lock-options .dialog-check {
+  margin: 0;
+}
+
 .copy-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 14px;
 }
 
 .copy-actions .btn-copy {

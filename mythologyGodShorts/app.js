@@ -475,6 +475,9 @@
       "video-sub": videoSub?.value || "",
       "priority-saved-select": document.getElementById("priority-saved-select")?.value || "",
       "p3-priority": document.getElementById("p3-priority")?.value || "",
+      "p3-include-figure-lock": document.getElementById("p3-include-figure-lock")?.checked === true,
+      "p3-include-environment-lock":
+        document.getElementById("p3-include-environment-lock")?.checked === true,
     };
   }
 
@@ -551,6 +554,11 @@
       setSelectValue(document.getElementById("priority-saved-select"), fields["priority-saved-select"]);
       const priority = document.getElementById("p3-priority");
       if (priority && fields["p3-priority"] != null) priority.value = String(fields["p3-priority"]);
+
+      const figureLockCb = document.getElementById("p3-include-figure-lock");
+      if (figureLockCb) figureLockCb.checked = fields["p3-include-figure-lock"] === true;
+      const envLockCb = document.getElementById("p3-include-environment-lock");
+      if (envLockCb) envLockCb.checked = fields["p3-include-environment-lock"] === true;
     } finally {
       isApplyingEditingState = false;
     }
@@ -571,6 +579,8 @@
       "video-sub",
       "priority-saved-select",
       "p3-priority",
+      "p3-include-figure-lock",
+      "p3-include-environment-lock",
     ];
     for (const id of ids) {
       const el = document.getElementById(id);
@@ -1123,6 +1133,42 @@
     };
   }
 
+  /** Catalog labels for video prompt identity lines (no lock prose required). */
+  function collectFigureLabels() {
+    const cards = [...document.querySelectorAll("#character-rows .character-card")];
+    const out = [];
+    const seen = new Set();
+    for (const card of cards) {
+      const godIds = getSelectedGodIds(card);
+      for (const gid of godIds) {
+        const god = findGod(gid);
+        if (!god) continue;
+        const label = String(god.label || god.id).trim();
+        if (!label || seen.has(label)) continue;
+        seen.add(label);
+        out.push({ label });
+      }
+      if (godIds.length === 0) {
+        const lockTa = String(card.querySelector(".lock-ta")?.value || "").trim();
+        if (lockTa && !seen.has("Character")) {
+          seen.add("Character");
+          out.push({ label: "Character" });
+        }
+      }
+    }
+    return out;
+  }
+
+  function collectBackgroundSelection() {
+    const bid = bgSelect.value?.trim();
+    if (!bid) return null;
+    const bg = cat()?.backgrounds?.backgrounds?.find((b) => b && b.id === bid);
+    return {
+      id: bid,
+      label: bg ? String(bg.label || bg.id).trim() : "Setting",
+    };
+  }
+
   function buildSceneBeatsHelperPrompt() {
     const gods = collectGods();
     const focalGod = gods[0] || null;
@@ -1318,8 +1364,13 @@
 
   function buildP3State() {
     return {
+      includeFigureLock: document.getElementById("p3-include-figure-lock")?.checked === true,
+      includeEnvironmentLock:
+        document.getElementById("p3-include-environment-lock")?.checked === true,
       gods: collectGods(),
+      figureLabels: collectFigureLabels(),
       background: collectBackground(),
+      backgroundSelection: collectBackgroundSelection(),
       videoCatalog: cat()?.videoStyle,
       prompt3: {
         performance: document.getElementById("p3-performance")?.value,
@@ -1748,9 +1799,9 @@
 
   document.getElementById("copy-p3")?.addEventListener("click", async () => {
     if (!eng()) return;
-    const gods = collectGods();
-    const raw = eng().buildPrompt3Merged(buildP3State());
-    const text = applyGodNameReplacements(raw, gods);
+    const state = buildP3State();
+    const raw = eng().buildPrompt3Merged(state);
+    const text = state.includeFigureLock ? applyGodNameReplacements(raw, state.gods) : raw;
     const ok = await copyText(text);
     showToast(ok ? "Copied" : "Copy failed");
   });
