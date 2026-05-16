@@ -913,6 +913,27 @@
     hidden.value = JSON.stringify(keys);
   }
 
+  function fillCameraAngleSelect() {
+    if (!camAdd) return;
+    const options = eng()?.PROMPT3_CAMERA_OPTIONS || [];
+    const labels = eng()?.PROMPT3_CAMERA_OPTION_LABELS || {};
+    const keep = camAdd.value;
+    camAdd.replaceChildren();
+    const ph = document.createElement("option");
+    ph.value = "";
+    ph.textContent = "Add angle…";
+    camAdd.appendChild(ph);
+    for (const opt of options) {
+      const o = document.createElement("option");
+      o.value = opt.id;
+      o.textContent = labels[opt.id] || opt.label || opt.id;
+      camAdd.appendChild(o);
+    }
+    if (keep && [...camAdd.options].some((op) => op.value === keep)) {
+      camAdd.value = keep;
+    }
+  }
+
   function renderCamChips() {
     const keys = readJsonKeys(camHidden, ["default_framing"]);
     const labels = eng()?.PROMPT3_CAMERA_OPTION_LABELS || {};
@@ -921,8 +942,10 @@
       const chip = document.createElement("span");
       chip.className = "chip";
       chip.setAttribute("role", "listitem");
+      const labelText = labels[key] || key;
       const span = document.createElement("span");
-      span.textContent = labels[key] || key;
+      span.textContent = labelText;
+      span.title = labelText;
       const rm = document.createElement("button");
       rm.type = "button";
       rm.setAttribute("aria-label", "Remove angle");
@@ -967,6 +990,7 @@
   function initChips() {
     if (camAdd.dataset.mobileWired === "1") return;
     camAdd.dataset.mobileWired = "1";
+    fillCameraAngleSelect();
     let keys = readJsonKeys(camHidden, []);
     if (!keys.length) {
       keys = ["default_framing"];

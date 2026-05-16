@@ -100,23 +100,68 @@
     "",
   ];
 
-  const PROMPT3_CAMERA_OPTION_LABELS = {
-    default_framing: "Default framing — balanced readable shot from beats & locks (no fixed preset)",
-    full_body_front: "Full body, eye level, facing camera",
-    wide_establishing: "Wide establishing — figure smaller; environment readable",
-    waist_up: "Waist-up — medium shot",
-    close_face_hands: "Close — face and hands",
-    low_angle: "Low angle — slight heroic lift",
-    high_angle: "High angle — slight downward view",
-    static_tripod: "Static camera — tripod feel; no travel",
-    slow_push_in: "Slow push-in — subtle zoom toward subject",
-    slow_drift_pan: "Slow drift / pan — minimal lateral move",
-    aerial_top_zoom_10: "Top view — zoom 10% (figure ~5–10% of frame; bird’s-eye)",
-    aerial_top_zoom_25: "Top view — zoom 25% (~4× farther than normal full-length)",
-    aerial_25deg_from_top_zoom_25: "25° from top — zoom 25% (steep down, very wide)",
-    aerial_25deg_from_top_zoom_50: "25° from top — zoom 50% (steep down, medium-wide)",
-    aerial_50deg_from_top_zoom_50: "50° from top — zoom 50% (classic drone oblique)",
-  };
+  /** @type {{ id: string, label: string, imagePct: number, videoPct: number, sort: number }[]} */
+  const PROMPT3_CAMERA_OPTIONS = [
+    { id: "default_framing", label: "Default framing — balanced readable shot from beats & locks", imagePct: 92, videoPct: 90, sort: 1 },
+    { id: "full_body_front", label: "Full body, eye level, facing camera", imagePct: 95, videoPct: 92, sort: 2 },
+    { id: "wide_establishing", label: "Wide establishing — figure smaller; environment readable", imagePct: 88, videoPct: 90, sort: 3 },
+    { id: "waist_up", label: "Waist-up — medium shot", imagePct: 90, videoPct: 88, sort: 4 },
+    { id: "close_face_hands", label: "Close — face and hands", imagePct: 93, videoPct: 75, sort: 5 },
+    { id: "low_angle", label: "Low angle — slight heroic lift", imagePct: 88, videoPct: 85, sort: 6 },
+    { id: "aerial_50deg_from_top_zoom_50", label: "50° from top — zoom 50% (classic drone oblique)", imagePct: 82, videoPct: 88, sort: 7 },
+    { id: "aerial_25deg_from_top_zoom_50", label: "25° from top — zoom 50% (steep down, medium-wide)", imagePct: 80, videoPct: 85, sort: 8 },
+    { id: "aerial_top_zoom_25", label: "Top view — zoom 25% (~4× farther than normal full-length)", imagePct: 72, videoPct: 80, sort: 9 },
+    { id: "aerial_25deg_from_top_zoom_25", label: "25° from top — zoom 25% (steep down, very wide)", imagePct: 70, videoPct: 78, sort: 10 },
+    { id: "high_angle", label: "High angle — slight downward view", imagePct: 65, videoPct: 68, sort: 11 },
+    { id: "aerial_top_zoom_10", label: "Top view — zoom 10% (figure ~5–10% of frame; bird’s-eye)", imagePct: 78, videoPct: 45, sort: 1 },
+    { id: "slow_push_in", label: "Slow push-in — subtle zoom toward subject", imagePct: 40, videoPct: 90, sort: 1 },
+    { id: "slow_drift_pan", label: "Slow drift / pan — minimal lateral move", imagePct: 38, videoPct: 88, sort: 2 },
+    { id: "static_tripod", label: "Static camera — tripod feel; no travel", imagePct: 35, videoPct: 75, sort: 3 },
+  ];
+
+  function cameraUsageScoreLabel(opt) {
+    const i = Math.max(0, Math.min(100, Number(opt.imagePct) || 0));
+    const v = Math.max(0, Math.min(100, Number(opt.videoPct) || 0));
+    return `I: ${i}%, V: ${v}%`;
+  }
+
+  function cameraSortTier(opt) {
+    const i = opt.imagePct;
+    const v = opt.videoPct;
+    const minBoth = Math.min(i, v);
+    if (minBoth >= 55) return 0;
+    if (i >= 55 && i >= v + 10) return 1;
+    if (v >= 55 && v >= i + 10) return 2;
+    return 3;
+  }
+
+  function sortCameraOptions(list) {
+    return [...list].sort((a, b) => {
+      const ta = cameraSortTier(a);
+      const tb = cameraSortTier(b);
+      if (ta !== tb) return ta - tb;
+      const minA = Math.min(a.imagePct, a.videoPct);
+      const minB = Math.min(b.imagePct, b.videoPct);
+      if (minB !== minA) return minB - minA;
+      const avgA = (a.imagePct + a.videoPct) / 2;
+      const avgB = (b.imagePct + b.videoPct) / 2;
+      if (avgB !== avgA) return avgB - avgA;
+      return a.sort - b.sort;
+    });
+  }
+
+  const PROMPT3_CAMERA_OPTIONS_SORTED = sortCameraOptions(PROMPT3_CAMERA_OPTIONS);
+
+  const PROMPT3_CAMERA_BY_ID = Object.fromEntries(PROMPT3_CAMERA_OPTIONS.map((o) => [o.id, o]));
+
+  const PROMPT3_CAMERA_OPTION_LABELS = Object.fromEntries(
+    PROMPT3_CAMERA_OPTIONS_SORTED.map((o) => [o.id, `${o.label} · ${cameraUsageScoreLabel(o)}`])
+  );
+
+  function cameraPromptTitle(cameraId) {
+    const o = PROMPT3_CAMERA_BY_ID[cameraId];
+    return o ? o.label : String(cameraId || "");
+  }
 
   const PROMPT3_MOOD_EXPAND = {
     bhakti:
@@ -596,7 +641,7 @@
     const DEFAULT_CAMERA_KEY = "default_framing";
     for (let i = 0; i < n; i++) {
       const key = camKeys[i];
-      const title = PROMPT3_CAMERA_OPTION_LABELS[key] || key;
+      const title = cameraPromptTitle(key) || key;
       const expanded = camMap && camMap[key] ? camMap[key] : "Camera: (not specified)";
       lines.push(
         `**Scene ${i + 1}** — the line after \`Scene ${i + 1}:\` must be exactly this short title (no extra words): **${title}**`,
@@ -835,9 +880,11 @@
     ];
 
     for (const key of camKeys) {
-      const title = PROMPT3_CAMERA_OPTION_LABELS[key] || key;
+      const title = cameraPromptTitle(key) || key;
+      const camOpt = PROMPT3_CAMERA_BY_ID[key];
+      const usageNote = camOpt ? ` (${cameraUsageScoreLabel(camOpt)})` : "";
       const expanded = PROMPT3_SCENE_EXPAND.camera?.[key] || "Camera: (not specified)";
-      lines.push(`- ${title}`, expanded, "");
+      lines.push(`- ${title}${usageNote}`, expanded, "");
     }
 
     lines.push(
@@ -865,7 +912,10 @@
     buildPrompt2,
     buildPrompt3Merged,
     buildPrompt3ImageSequence,
+    PROMPT3_CAMERA_OPTIONS: PROMPT3_CAMERA_OPTIONS_SORTED,
     PROMPT3_CAMERA_OPTION_LABELS,
+    cameraUsageScoreLabel,
+    cameraPromptTitle,
     PROMPT3_MOOD_EXPAND,
   };
 })();
