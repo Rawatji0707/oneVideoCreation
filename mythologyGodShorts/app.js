@@ -453,10 +453,12 @@
     const rows = [...document.querySelectorAll("#character-rows .character-card")].map((card) => {
       const godIds = getSelectedGodIds(card);
       const legacyGod = godIds.length === 1 ? godIds[0] : "";
+      const versionMap = getVersionMap(card);
       return {
         godIds,
         godId: legacyGod,
-        versionId: card.querySelector(".ver-sel")?.value?.trim() || "",
+        versionId: versionMap[godIds[0]] || "",
+        versionMap,
         lockText: card.querySelector(".lock-ta")?.value || "",
       };
     });
@@ -515,6 +517,7 @@
             godIds: ids,
             godId: ids[0] || "",
             versionId: row.versionId,
+            versionMap: row.versionMap,
             lockText: row.lockText,
           });
         }
@@ -700,16 +703,71 @@
     if (want && [...sel.options].some((op) => op.value === want)) sel.value = want;
   }
 
+  function getVersionMap(card) {
+    if (!card) return {};
+    const out = {};
+    const list = card.querySelectorAll(".ver-multi-sel");
+    for (const sel of list) {
+      const gid = String(sel.getAttribute("data-god-id") || "").trim();
+      const vid = String(sel.value || "").trim();
+      if (gid && vid) out[gid] = vid;
+    }
+    return out;
+  }
+
+  function renderVersionControls(card, preferredVersionMap, preferredSingleVersionId) {
+    if (!card) return;
+    const host = card.querySelector(".ver-multi-box");
+    if (!host) return;
+    const ids = getSelectedGodIds(card);
+    const keepMap = getVersionMap(card);
+    const prefMap =
+      preferredVersionMap && typeof preferredVersionMap === "object" ? preferredVersionMap : {};
+    host.replaceChildren();
+
+    if (!ids.length) {
+      const empty = document.createElement("div");
+      empty.className = "ver-multi-empty";
+      empty.textContent = "Select one or more gods.";
+      host.appendChild(empty);
+      return;
+    }
+
+    for (let i = 0; i < ids.length; i++) {
+      const gid = ids[i];
+      const god = findGod(gid);
+      const row = document.createElement("div");
+      row.className = "ver-multi-row";
+      const name = document.createElement("span");
+      name.className = "ver-multi-name";
+      name.textContent = god ? String(god.label || god.id).trim() : gid;
+      const sel = document.createElement("select");
+      sel.className = "ver-multi-sel";
+      sel.setAttribute("data-god-id", gid);
+      sel.setAttribute("aria-label", `Version for ${name.textContent || "selected god"}`);
+      const preferred =
+        String(prefMap[gid] || "").trim() ||
+        String(keepMap[gid] || "").trim() ||
+        (i === 0 ? String(preferredSingleVersionId || "").trim() : "");
+      fillVersionSelect(gid, sel, preferred);
+      row.appendChild(name);
+      row.appendChild(sel);
+      host.appendChild(row);
+    }
+  }
+
   function syncLockFromRow(card) {
     const godIds = getSelectedGodIds(card);
-    const verId = card.querySelector(".ver-sel")?.value?.trim();
+    const versionMap = getVersionMap(card);
     const ta = card.querySelector(".lock-ta");
     if (!ta) return;
 
     if (godIds.length === 0) {
       ta.value = "";
     } else if (godIds.length === 1) {
-      const god = findGod(godIds[0]);
+      const gid = godIds[0];
+      const god = findGod(gid);
+      const verId = String(versionMap[gid] || "").trim();
       const ver = god && verId ? findVersion(god, verId) : null;
       if (ver) {
         ta.value = catalogVersionLock(ver);
@@ -721,6 +779,7 @@
       for (const gid of godIds) {
         const god = findGod(gid);
         if (!god) continue;
+        const verId = String(versionMap[gid] || "").trim();
         const ver = findVersionOrFallback(god, verId);
         const line = ver ? catalogVersionLock(ver) : "";
         const name = String(god.label || god.id).trim();
@@ -733,15 +792,14 @@
 
   function wireCharacterCard(card) {
     const box = card.querySelector(".god-multi-box");
-    const vSel = card.querySelector(".ver-sel");
-    if (!box || !vSel) return;
+    const vHost = card.querySelector(".ver-multi-box");
+    if (!box || !vHost) return;
     const onGodChange = () => {
-      const ids = getSelectedGodIds(card);
-      fillVersionSelect(ids[0] || "", vSel, "");
+      renderVersionControls(card, null, "");
       syncLockFromRow(card);
     };
     box.addEventListener("change", onGodChange);
-    vSel.addEventListener("change", () => {
+    vHost.addEventListener("change", () => {
       syncLockFromRow(card);
     });
   }
@@ -772,7 +830,7 @@
         </div>
         <div class="field">
           <label class="ver-label">Version</label>
-          <select class="ver-sel" aria-label="Version"></select>
+          <div class="ver-multi-box" aria-label="Version selectors"></div>
         </div>
       </div>
       <div class="field">
@@ -783,7 +841,6 @@
     rowsHost.appendChild(card);
     wireCharacterCard(card);
     const box = card.querySelector(".god-multi-box");
-    const vSel = card.querySelector(".ver-sel");
     const prefIds =
       Array.isArray(preferred?.godIds) && preferred.godIds.length
         ? preferred.godIds
@@ -791,7 +848,7 @@
           ? [String(preferred.godId).trim()].filter(Boolean)
           : [];
     fillGodMultiBox(box, prefIds);
-    fillVersionSelect(prefIds[0] || "", vSel, preferred?.versionId || "");
+    renderVersionControls(card, preferred?.versionMap, preferred?.versionId || "");
     if (preferred?.lockText != null) {
       card.querySelector(".lock-ta").value = String(preferred.lockText);
     } else {
@@ -814,20 +871,22 @@
     }
     cards.forEach((card, index) => {
       const box = card.querySelector(".god-multi-box");
-      const vSel = card.querySelector(".ver-sel");
-      if (!box || !vSel) return;
+      if (!box) return;
       const oldIds = getSelectedGodIds(card);
-      const oldVersion = vSel.value?.trim();
+      const oldVersionMap = getVersionMap(card);
       const prefGodIds =
         index === 0 && Array.isArray(preferred?.godIds) && preferred.godIds.length
           ? preferred.godIds
           : index === 0 && preferred?.godId
             ? [String(preferred.godId).trim()].filter(Boolean)
             : oldIds;
-      const nextVersion = index === 0 && preferred?.versionId ? preferred.versionId : oldVersion;
+      const nextVersionMap =
+        index === 0 && preferred?.versionMap && typeof preferred.versionMap === "object"
+          ? preferred.versionMap
+          : oldVersionMap;
+      const nextVersion = index === 0 && preferred?.versionId ? preferred.versionId : "";
       fillGodMultiBox(box, prefGodIds);
-      const firstId = getSelectedGodIds(card)[0] || "";
-      fillVersionSelect(firstId, vSel, nextVersion);
+      renderVersionControls(card, nextVersionMap, nextVersion);
       syncLockFromRow(card);
     });
     refreshRemoveButtons();
@@ -1088,7 +1147,7 @@
     const out = [];
     for (const card of cards) {
       const godIds = getSelectedGodIds(card);
-      const verId = card.querySelector(".ver-sel")?.value?.trim() || "";
+      const versionMap = getVersionMap(card);
       const lockTa = String(card.querySelector(".lock-ta")?.value || "").trim();
 
       if (godIds.length === 0) {
@@ -1097,7 +1156,9 @@
       }
 
       if (godIds.length === 1) {
-        const god = findGod(godIds[0]);
+        const gid = godIds[0];
+        const verId = String(versionMap[gid] || "").trim();
+        const god = findGod(gid);
         const ver = god && verId ? findVersion(god, verId) : null;
         if (godIds[0] && !god) continue;
         if (godIds[0] && verId && !ver) continue;
@@ -1112,6 +1173,7 @@
       for (const gid of godIds) {
         const god = findGod(gid);
         if (!god) continue;
+        const verId = String(versionMap[gid] || "").trim();
         const ver = findVersionOrFallback(god, verId);
         const videoLock = ver ? catalogVersionLock(ver) : "";
         const label = String(god.label || god.id).trim();
@@ -1460,9 +1522,10 @@
     const updates = [];
     for (const card of cards) {
       const godIds = getSelectedGodIds(card);
-      const versionId = card.querySelector(".ver-sel")?.value?.trim();
+      const versionMap = getVersionMap(card);
       const text = card.querySelector(".lock-ta")?.value?.trim() || "";
       for (const godId of godIds) {
+        const versionId = String(versionMap[godId] || "").trim();
         if (godId && versionId) updates.push({ godId, versionId, text });
       }
     }
