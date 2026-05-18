@@ -306,6 +306,28 @@
                 <span>Add Environment lock</span>
               </label>
             </div>
+            <fieldset class="video-use-images" aria-label="Use images in Grok">
+              <legend class="video-use-images-legend">Use images</legend>
+              <label class="dialog-check use-images-option">
+                <input type="radio" class="use-images-radio" name="p3-use-images-mode" value="none" />
+                <span>No image</span>
+              </label>
+              <label class="dialog-check use-images-option">
+                <input type="radio" class="use-images-radio" name="p3-use-images-mode" value="one" checked />
+                <span>Driving image only</span>
+              </label>
+              <label class="dialog-check use-images-option">
+                <input type="radio" class="use-images-radio" name="p3-use-images-mode" value="first_last" />
+                <span>First &amp; last</span>
+              </label>
+              <label class="dialog-check use-images-option">
+                <input type="radio" class="use-images-radio" name="p3-use-images-mode" value="all_three" />
+                <span>All 3</span>
+              </label>
+            </fieldset>
+            <p class="video-use-images-hint">
+              Refine in ChatGPT (text only), then paste into Grok and attach images manually as selected.
+            </p>
             <div class="copy-actions copy-actions-video">
               <button type="button" class="btn-copy" id="copy-p3">Copy Video Prompt</button>
             </div>

@@ -239,62 +239,155 @@
     return parts.join("\n");
   }
 
-  function prompt3AttachedImagePhrases(figureLabels, backgroundSelection, includeFigureLock, includeEnvironmentLock) {
+  const P3_USE_IMAGES_MODES = ["none", "one", "first_last", "all_three"];
+
+  function normalizeUseImagesMode(mode) {
+    const m = String(mode || "one").trim();
+    return P3_USE_IMAGES_MODES.includes(m) ? m : "one";
+  }
+
+  function prompt3FigureImageSuffix(useImagesMode) {
+    const mode = normalizeUseImagesMode(useImagesMode);
+    if (mode === "one") return "use attached driving image";
+    if (mode === "first_last") return "use attached images — first and second";
+    if (mode === "all_three") return "use attached images — first, second, and third";
+    return "";
+  }
+
+  function prompt3AttachedImagePhrases(
+    figureLabels,
+    backgroundSelection,
+    includeFigureLock,
+    includeEnvironmentLock,
+    useImagesMode
+  ) {
+    const mode = normalizeUseImagesMode(useImagesMode);
+    if (mode === "none") return [];
+    const figSuffix = prompt3FigureImageSuffix(mode);
+    const envSuffix =
+      mode === "one"
+        ? "use attached driving image"
+        : mode === "first_last"
+          ? "use attached images — first and second"
+          : "use attached images — first, second, and third";
     const phrases = [];
     if (!includeFigureLock) {
       const figures = Array.isArray(figureLabels) ? figureLabels : [];
       if (figures.length) {
         for (const g of figures) {
           const name = String(g?.label || "").trim();
-          if (name) phrases.push(`${name} (use attached image)`);
+          if (name) phrases.push(`${name} (${figSuffix})`);
         }
       } else {
-        phrases.push("(use attached image) for deity / figure");
+        phrases.push(`(${figSuffix} for deity / figure)`);
       }
     }
     if (!includeEnvironmentLock) {
       const envName = String(backgroundSelection?.label || "").trim() || "Environment";
-      phrases.push(`${envName} (use attached image)`);
+      phrases.push(`${envName} (${envSuffix})`);
     }
     return phrases;
+  }
+
+  function prompt3TextOnlySection() {
+    return [
+      "=== GENERATION (text only — no images in Grok) ===",
+      "The user refines this prompt in **ChatGPT** (text only), then runs **video generation in Grok without attaching reference images**.",
+      "The final paragraph must be **self-contained**: use character/environment locks and **priority scene beats** for look and action—do not refer to attached or driving images.",
+      "",
+    ];
+  }
+
+  function prompt3ImageReferenceSection(useImagesMode, referenceCameraTitle) {
+    const mode = normalizeUseImagesMode(useImagesMode);
+    if (mode === "none") return prompt3TextOnlySection();
+
+    const camLine = referenceCameraTitle
+      ? `Storyboard frames (if used) come from **Copy Image Prompt** for camera angle: **${referenceCameraTitle}**.`
+      : "Storyboard frames (if used) come from **Copy Image Prompt** for the selected camera angle.";
+
+    const lines = [
+      "=== IMAGE REFERENCES (Grok — user attaches manually) ===",
+      camLine,
+      "The user refines text in **ChatGPT** (no images), then pastes the result into **Grok** and attaches image(s) **in the order below**.",
+      "",
+    ];
+
+    if (mode === "one") {
+      lines.push(
+        "Attach **one** image in Grok: the **driving reference** (clear figure/character and scene look).",
+        "This is **not** a storyboard “start frame”—it **drives** visual identity and composition. **Motion and action** follow **priority beats** and creative rows; do not contradict the driving image.",
+        ""
+      );
+    } else if (mode === "first_last") {
+      lines.push(
+        "Attach **two** images in Grok, **in this order**:",
+        "1. **First image** — starting reference (opening pose, composition, lighting).",
+        "2. **Second image** — ending reference (closing pose/state at end of clip).",
+        "The clip must **progress from the first image toward the second**. Keep figure identity and environment consistent; only motion and staging evolve.",
+        ""
+      );
+    } else {
+      lines.push(
+        "Attach **three** images in Grok, **in this order**:",
+        "1. **First image** — starting reference.",
+        "2. **Second image** — middle reference (mid-beat / mid-action).",
+        "3. **Third image** — ending reference.",
+        "Follow **first → second → third** in time. Keep figure and environment consistent across all three.",
+        ""
+      );
+    }
+    return lines;
   }
 
   function prompt3AttachedImageIdentitySection(
     figureLabels,
     backgroundSelection,
     includeFigureLock,
-    includeEnvironmentLock
+    includeEnvironmentLock,
+    useImagesMode
   ) {
     if (includeFigureLock && includeEnvironmentLock) return [];
+    const mode = normalizeUseImagesMode(useImagesMode);
+    if (mode === "none") return [];
+
     const phrases = prompt3AttachedImagePhrases(
       figureLabels,
       backgroundSelection,
       includeFigureLock,
-      includeEnvironmentLock
+      includeEnvironmentLock,
+      useImagesMode
     );
     if (!phrases.length) return [];
 
-    const lines = ["=== IDENTITY (names only — attached image in Grok) ==="];
+    const figSuffix = prompt3FigureImageSuffix(mode);
+    const envSuffix =
+      mode === "one"
+        ? "use attached driving image"
+        : mode === "first_last"
+          ? "use attached images — first and second"
+          : "use attached images — first, second, and third";
+
+    const lines = ["=== IDENTITY (names + image roles for Grok) ==="];
     if (!includeFigureLock) {
       const figures = Array.isArray(figureLabels) ? figureLabels.filter((g) => String(g?.label || "").trim()) : [];
       if (figures.length) {
         figures.forEach((g, i) => {
           const name = String(g.label).trim();
           const tag = figures.length > 1 ? `Figure ${i + 1}` : "Deity / figure";
-          lines.push(`${tag}: ${name} (use attached image)`);
+          lines.push(`${tag}: ${name} (${figSuffix})`);
         });
       } else {
-        lines.push("Deity / figure: (use attached image)");
+        lines.push(`Deity / figure: (${figSuffix})`);
       }
     }
     if (!includeEnvironmentLock) {
       const envName = String(backgroundSelection?.label || "").trim() || "Environment";
-      lines.push(`Environment: ${envName} (use attached image)`);
+      lines.push(`Environment: ${envName} (${envSuffix})`);
     }
     lines.push(
-      "The user refines this in **ChatGPT** (text only), then runs **image-to-video** in **Grok** with a **start image** attached.",
-      `In your **final** English output, you **must** weave in **verbatim** each phrase: ${phrases.map((p) => `\`${p}\``).join(", ")}.`,
-      "For those items: **do not** invent detailed costume, anatomy, jewelry, terrain, sky, or lighting prose—the attached image supplies look.",
+      `In your **final** English output, weave in **verbatim** each phrase: ${phrases.map((p) => `\`${p}\``).join(", ")}.`,
+      "For those tags: **do not** invent detailed costume, anatomy, jewelry, terrain, sky, or lighting prose—images supply look; **priority beats** supply motion.",
       ""
     );
     return lines;
@@ -307,7 +400,9 @@
     hasGods,
     figureLabels,
     backgroundSelection,
+    useImagesMode,
   }) {
+    const mode = normalizeUseImagesMode(useImagesMode);
     if (multiFig && includeFigureLock) {
       return "Still keep **every locked figure** and the place recognizable per the locks below unless this block explicitly rewrites an element (e.g. mount, seating, interaction).";
     }
@@ -320,16 +415,20 @@
     if (includeFigureLock) {
       return "Still keep the figure recognizable per the character lock below unless this block explicitly rewrites an element.";
     }
+    if (mode === "none") {
+      return "Follow **priority scene beats** for motion and staging; the user will **not** attach images in Grok—do not refer to attached images.";
+    }
     const phrases = prompt3AttachedImagePhrases(
       figureLabels,
       backgroundSelection,
       includeFigureLock,
-      includeEnvironmentLock
+      includeEnvironmentLock,
+      useImagesMode
     );
     if (phrases.length) {
       return `Name deity/figure and environment using **IDENTITY** above (${phrases.join("; ")}) unless this block explicitly rewrites an element—no detailed look prose for those tags.`;
     }
-    return "Use **(use attached image)** for figure and environment unless this block explicitly rewrites an element.";
+    return "Follow **priority scene beats**; image roles are defined in **IMAGE REFERENCES** above.";
   }
 
   /**
@@ -341,6 +440,7 @@
   function buildPrompt3Merged(state) {
     const includeFigureLock = Boolean(state?.includeFigureLock);
     const includeEnvironmentLock = Boolean(state?.includeEnvironmentLock);
+    const useImagesMode = normalizeUseImagesMode(state?.useImagesMode);
     const godsAll = state.gods || [];
     const figureLabels = Array.isArray(state.figureLabels) ? state.figureLabels : godsAll;
     const backgroundSelection = state.backgroundSelection || null;
@@ -350,7 +450,7 @@
     const priorityRaw = String(state.prompt3?.priorityLines || "").trim();
     if (includeEnvironmentLock && !bgLockAll) {
       return [
-        "Add text in the **Background lock** field (Step 2), or uncheck **Add Environment lock** to use **Environment … (use attached image)** instead, then copy **Video Prompt** again.",
+        "Add text in the **Background lock** field (Step 2), or uncheck **Add Environment lock** and use image roles in **Use images**, then copy **Video Prompt** again.",
         "",
         "Prompt 3 merges that lock with Priority scene beats and your creative choices.",
       ].join("\n");
@@ -361,7 +461,9 @@
         "",
         includeEnvironmentLock
           ? "Those beats drive motion and staging together with the Environment lock."
-          : "Those beats drive motion and staging; name deity and environment with **(use attached image)** per **IDENTITY** when locks are unchecked.",
+          : useImagesMode === "none"
+            ? "Those beats drive motion and staging; text-only in Grok (no attached images)."
+            : "Those beats drive motion and staging; name deity and environment per **IDENTITY** when locks are unchecked.",
       ].join("\n");
     }
 
@@ -371,6 +473,7 @@
     const camKeys = Array.isArray(state.prompt3?.cameraKeys)
       ? state.prompt3.cameraKeys.map((k) => String(k).trim()).filter(Boolean)
       : ["default_framing"];
+    const referenceCameraTitle = cameraPromptTitle(camKeys[0]) || camKeys[0] || "Default framing";
     const cam = { keys: camKeys, text: cameraTextFromKeys(camKeys) };
     const moodKeys = Array.isArray(state.prompt3?.moodKeys)
       ? state.prompt3.moodKeys.map((k) => String(k).trim()).filter(Boolean)
@@ -400,7 +503,9 @@
         includeFigureLock,
         includeEnvironmentLock,
         figureLabels,
-        backgroundSelection
+        backgroundSelection,
+        useImagesMode,
+        referenceCameraTitle
       );
     }
 
@@ -417,15 +522,19 @@
       "Fluency must **not** remove **verbatim** hard-limit wording from the locks or beats (e.g. *strictly*, *exactly one*) — see **FIDELITY RULES** below.",
       includeFigureLock || includeEnvironmentLock
         ? "The paragraph may be **longer** when the locks below are detailed: **fidelity to those locks matters more than brevity**."
-        : "The paragraph may be **longer** when beats are detailed: include required **(use attached image)** name tags and beat fidelity over brevity.",
+        : useImagesMode === "none"
+          ? "The paragraph may be **longer** when beats are detailed: text-only generation—beat fidelity over brevity."
+          : "The paragraph may be **longer** when beats are detailed: include required image-role name tags from **IDENTITY** and beat fidelity over brevity.",
       "",
     ];
+    lines.push(...prompt3ImageReferenceSection(useImagesMode, referenceCameraTitle));
     lines.push(
       ...prompt3AttachedImageIdentitySection(
         figureLabels,
         backgroundSelection,
         includeFigureLock,
-        includeEnvironmentLock
+        includeEnvironmentLock,
+        useImagesMode
       )
     );
 
@@ -440,6 +549,7 @@
           hasGods: includeFigureLock ? gods.length > 0 : figureLabels.length > 0,
           figureLabels,
           backgroundSelection,
+          useImagesMode,
         }),
         "",
         priorityRaw,
@@ -483,17 +593,23 @@
         : gods.length
           ? includeEnvironmentLock
             ? "- **Priority scene beats** (if present above) control **action, motion, and dramatic beat** (e.g. descent, trishul swing, intensity). Locks control **how the figure and place look** during that action."
-            : "- **Priority scene beats** (if present above) control **action, motion, and dramatic beat**. The **character lock** controls figure look; **place** uses the **(use attached image)** environment tag from **IDENTITY**."
+            : useImagesMode === "none"
+              ? "- **Priority scene beats** (if present above) control **action, motion, and dramatic beat**. The **character lock** controls figure look; **place** from beats or environment lock."
+              : "- **Priority scene beats** (if present above) control **action, motion, and dramatic beat**. The **character lock** controls figure look; **place** uses the environment image-role tag from **IDENTITY**."
           : includeEnvironmentLock
             ? "- **Priority scene beats** control **action, motion, and dramatic beat**. The **environment lock** controls **how the place looks** during that action."
-            : "- **Priority scene beats** control **action, motion, and dramatic beat**. Name figure and environment with **(use attached image)** tags from **IDENTITY**—no detailed look prose.",
+            : useImagesMode === "none"
+              ? "- **Priority scene beats** control **action, motion, and dramatic beat**; text-only in Grok—no image references."
+              : "- **Priority scene beats** control **action, motion, and dramatic beat**. Name figure and environment with image-role tags from **IDENTITY**—no detailed look prose.",
       multiFig
         ? "- If priority motion seems intense, still describe **each** locked figure using that figure’s **character lock**—not a generic silhouette."
         : gods.length
           ? "- If priority motion seems intense, still describe the figure using the **character lock’s** materials and anatomy—not a generic warrior silhouette."
           : includeEnvironmentLock
             ? "- If priority motion seems intense, keep staging coherent with the **environment lock** and **priority beats**—do not invent contradictory layout."
-            : "- If priority motion seems intense, keep staging coherent with **(use attached image)** identity tags and **priority beats**—do not invent contradictory layout.",
+            : useImagesMode === "none"
+              ? "- If priority motion seems intense, keep staging coherent with **priority beats**—text-only."
+              : "- If priority motion seems intense, keep staging coherent with image-role identity tags and **priority beats**—do not invent contradictory layout.",
       "- The **Video style** section below must read clearly in your paragraph (e.g. VFX/CGI fantasy elemental FX—use wording consistent with that selection).",
       "- Omit a lock clause **only** when this camera angle clearly cannot show it; otherwise keep it.",
       ...(perfLine
@@ -503,13 +619,17 @@
               ? "- **Performance** is **None** — do **not** impose a default performance preset (e.g. hero stance / standing calm / grounded stillness). Motion comes from **priority scene beats** when present, otherwise from the character lock—preserve flight, descent, mid-air action, etc. when beats imply them."
               : includeEnvironmentLock
                 ? "- **Performance** is **None** — do **not** impose a default performance preset (e.g. hero stance / standing calm / grounded stillness). Motion comes from **priority scene beats** and the environment lock when beats imply flight, descent, mid-air action, etc."
-                : "- **Performance** is **None** — do **not** impose a default performance preset (e.g. hero stance / standing calm / grounded stillness). Motion comes from **priority scene beats**; keep **(use attached image)** identity tags when beats imply flight, descent, mid-air action, etc.",
+                : useImagesMode === "none"
+                  ? "- **Performance** is **None** — motion comes from **priority scene beats** only (text-only in Grok)."
+                  : "- **Performance** is **None** — motion comes from **priority scene beats**; keep image-role identity tags when beats imply flight, descent, mid-air action, etc.",
           ]),
       ...(!atmLine
         ? [
             includeEnvironmentLock
               ? "- **Atmosphere** is **None** — do **not** impose a default lighting/mood template (e.g. golden hour only); infer sky, weather, and light from the **environment lock** and **priority beats** when consistent."
-              : "- **Atmosphere** is **None** — do **not** impose a default lighting/mood template (e.g. golden hour only); do not invent sky/weather prose beyond **(use attached image)** environment tags and **priority beats**.",
+              : useImagesMode === "none"
+                ? "- **Atmosphere** is **None** — infer sky, weather, and light from **priority beats** only."
+                : "- **Atmosphere** is **None** — do not invent sky/weather prose beyond image-role environment tags and **priority beats**.",
           ]
         : []),
       ...(!consLine
@@ -539,16 +659,18 @@
       figureLabels,
       backgroundSelection,
       includeFigureLock,
-      includeEnvironmentLock
+      includeEnvironmentLock,
+      useImagesMode
     );
     const combineParts = ["camera"];
     if (multiFig) combineParts.unshift("each figure’s distinct look");
     else if (gods.length === 1) combineParts.unshift("figure look");
-    else if (!includeFigureLock) combineParts.unshift("deity name with (use attached image)");
+    else if (!includeFigureLock && useImagesMode !== "none")
+      combineParts.unshift("deity name with image-role tags");
     else combineParts.unshift("story motion from beats");
     if (includeEnvironmentLock) combineParts.splice(combineParts.length - 1, 0, "place look");
-    else if (!includeEnvironmentLock)
-      combineParts.splice(combineParts.length - 1, 0, "environment with (use attached image)");
+    else if (!includeEnvironmentLock && useImagesMode !== "none")
+      combineParts.splice(combineParts.length - 1, 0, "environment with image-role tags");
     if (perfLine) combineParts.push("performance");
     if (atmLine) combineParts.push("atmosphere");
     if (consLine) combineParts.push("constraints");
@@ -566,22 +688,31 @@
       ? `- **Covers** ${combineParts.join(", ")} in **one** paragraph by describing **coexisting** distinct figures—**not** by merging or fusing them.${noneNote} Use connectors such as *beside*, *with*, or *while* for spatial relation; **never** hybrid or fused anatomy.`
       : gods.length || includeFigureLock || includeEnvironmentLock
         ? `- Combines ${combineParts.join(", ")}.${noneNote}`
-        : `- Combines ${combineParts.join(", ")}—include required **(use attached image)** name tags from **IDENTITY** and **priority beats**; no catalog lock prose.${noneNote}`;
+        : useImagesMode === "none"
+          ? `- Combines ${combineParts.join(", ")}—text-only in Grok; **priority beats** and creative rows carry look and motion.${noneNote}`
+          : `- Combines ${combineParts.join(", ")}—include required image-role name tags from **IDENTITY** and **priority beats**; no catalog lock prose.${noneNote}`;
 
     const embedLocksLine = (() => {
       if (gods.length && includeEnvironmentLock) {
         return "- **Embeds** the Character lock(s) and Environment lock with **high fidelity**—not a shortened recap—**and** keeps **verbatim** hard-limit phrases from those locks and from **priority beats** when present (*strictly*, *exactly*, *only one*, etc.).";
       }
       if (gods.length) {
-        return "- **Embeds** the Character lock(s) with **high fidelity**—not a shortened recap—**and** keeps **verbatim** hard-limit phrases from those locks and from **priority beats** when present (*strictly*, *exactly*, *only one*, etc.). **Place** uses the environment **(use attached image)** tag from **IDENTITY**—no terrain prose.";
+        const placeNote =
+          useImagesMode === "none"
+            ? "**Place** follows the environment lock or beats."
+            : "**Place** uses the environment image-role tag from **IDENTITY**—no terrain prose.";
+        return `- **Embeds** the Character lock(s) with **high fidelity**—not a shortened recap—**and** keeps **verbatim** hard-limit phrases from those locks and from **priority beats** when present (*strictly*, *exactly*, *only one*, etc.). ${placeNote}`;
       }
       if (includeEnvironmentLock) {
         return "- **Embeds** the Environment lock with **high fidelity**—not a shortened recap—**and** keeps **verbatim** hard-limit phrases from that lock and from **priority beats** when present (*strictly*, *exactly*, *only one*, etc.).";
       }
+      if (useImagesMode === "none") {
+        return "- **Text-only** in Grok: the paragraph must stand alone using **priority beats** (and any partial locks); do not refer to attached images.";
+      }
       if (attachedPhrases.length) {
         return `- **Must include verbatim** in the paragraph: ${attachedPhrases.map((p) => `\`${p}\``).join(", ")}. **Do not** add detailed costume or environment description for those tags—**priority beats** carry motion and staging.`;
       }
-      return "- Include **(use attached image)** for figure and environment; **priority beats** carry motion—no invented look prose.";
+      return "- Follow image roles in **IMAGE REFERENCES**; **priority beats** carry motion—no invented look prose.";
     })();
 
     const whatWrite = [
@@ -607,23 +738,31 @@
             ? "- Where Priority clashes with a mild dropdown row (performance, atmosphere, or camera), **Priority wins** for action intensity; still describe costume, anatomy, and setting cues per the locks."
             : includeEnvironmentLock
               ? "- Where Priority clashes with a mild dropdown row (performance, atmosphere, or camera), **Priority wins** for action intensity; still honor the environment lock and beat wording."
-              : "- Where Priority clashes with a mild dropdown row (performance, atmosphere, or camera), **Priority wins** for action intensity; still keep required **(use attached image)** name tags and beat wording."
+              : useImagesMode === "none"
+                ? "- Where Priority clashes with a mild dropdown row (performance, atmosphere, or camera), **Priority wins** for action intensity; text-only—no image references."
+                : "- Where Priority clashes with a mild dropdown row (performance, atmosphere, or camera), **Priority wins** for action intensity; still keep required image-role name tags and beat wording."
           : gods.length
             ? "- Where Priority clashes with mild camera framing, **Priority wins** for action intensity; still describe costume, anatomy, and setting cues per the locks."
             : includeEnvironmentLock
               ? "- Where Priority clashes with mild camera framing, **Priority wins** for action intensity; still honor the environment lock and beat wording."
-              : "- Where Priority clashes with mild camera framing, **Priority wins** for action intensity; still keep required **(use attached image)** name tags and beat wording.",
+              : useImagesMode === "none"
+                ? "- Where Priority clashes with mild camera framing, **Priority wins** for action intensity; text-only—no image references."
+                : "- Where Priority clashes with mild camera framing, **Priority wins** for action intensity; still keep required image-role name tags and beat wording.",
         includeFigureLock || includeEnvironmentLock
           ? "- Keep edits readable unless Priority asks for fierce motion (then match that energy while keeping lock-accurate costume and setting)."
-          : "- Keep edits readable unless Priority asks for fierce motion (then match that energy while keeping **(use attached image)** tags and beats)."
+          : useImagesMode === "none"
+            ? "- Keep edits readable unless Priority asks for fierce motion (then match that energy using beats and text only)."
+            : "- Keep edits readable unless Priority asks for fierce motion (then match that energy while keeping image-role tags and beats)."
       );
     } else {
       whatWrite.push(
         includeFigureLock || includeEnvironmentLock
           ? "- Does **not** contradict the locks."
-          : attachedPhrases.length
-            ? `- Includes ${attachedPhrases.map((p) => `\`${p}\``).join(", ")} and does **not** invent contradictory look prose.`
-            : "- Includes **(use attached image)** tags and does **not** invent contradictory look prose.",
+          : useImagesMode === "none"
+            ? "- Text-only generation; does **not** refer to attached images."
+            : attachedPhrases.length
+              ? `- Includes ${attachedPhrases.map((p) => `\`${p}\``).join(", ")} and does **not** invent contradictory look prose.`
+              : "- Follows **IMAGE REFERENCES** and does **not** invent contradictory look prose.",
         "- Keeps motion and camera modest and readable (no chaotic edits, no rapid cuts)."
       );
     }
@@ -656,16 +795,20 @@
     includeFigureLock,
     includeEnvironmentLock,
     figureLabels,
-    backgroundSelection
+    backgroundSelection,
+    useImagesMode,
+    referenceCameraTitle
   ) {
     const n = camKeys.length;
     const camMap = PROMPT3_SCENE_EXPAND.camera;
     const godList = includeFigureLock ? gods : [];
+    const mode = normalizeUseImagesMode(useImagesMode);
     const attachedPhrases = prompt3AttachedImagePhrases(
       figureLabels,
       backgroundSelection,
       includeFigureLock,
-      includeEnvironmentLock
+      includeEnvironmentLock,
+      useImagesMode
     );
     const bgLock = background ? String(background.videoLock || "").trim() : "";
     const perfLine = hasExpandLine(perf);
@@ -679,13 +822,15 @@
           ? "**identical** deity identity"
           : includeEnvironmentLock
             ? "**continuous** staging from **priority beats** and the **environment lock**"
-            : "**continuous** staging from **priority beats** with the same **(use attached image)** identity tags in every scene";
+            : mode === "none"
+              ? "**continuous** staging from **priority beats** (text-only in Grok) in every scene"
+              : "**continuous** staging from **priority beats** with the same image-role identity tags in every scene";
 
     let beatIntroSecond;
     if (perfLine && atmLine && consLine) {
       beatIntroSecond = `Keep **one** continuous beat: ${idKeep}, **identical** place and environment, **identical** motion / performance, atmosphere, and constraints as in the shared blocks. **Do not** invent new story beats, time jumps, costume changes, or location changes between scenes.`;
     } else if (!perfLine && !atmLine && !consLine) {
-      beatIntroSecond = `Keep **one** continuous beat: ${idKeep}, **identical** place and environment. **Performance**, **Atmosphere**, and **Constraints** are all **None** — do **not** invent default stance, lighting recipe, or constraint stack; use ${includeFigureLock || includeEnvironmentLock ? "**locks**, " : ""}**priority scene beats** (when present), ${includeFigureLock || includeEnvironmentLock ? "" : "the same **(use attached image)** name tags, "}and **video style** only. **Do not** invent new story beats, time jumps, costume changes, or location changes between scenes.`;
+      beatIntroSecond = `Keep **one** continuous beat: ${idKeep}, **identical** place and environment. **Performance**, **Atmosphere**, and **Constraints** are all **None** — do **not** invent default stance, lighting recipe, or constraint stack; use ${includeFigureLock || includeEnvironmentLock ? "**locks**, " : ""}**priority scene beats** (when present), ${includeFigureLock || includeEnvironmentLock || mode === "none" ? "" : "the same image-role identity tags, "}and **video style** only. **Do not** invent new story beats, time jumps, costume changes, or location changes between scenes.`;
     } else {
       const have = [];
       if (perfLine) have.push("motion / performance");
@@ -695,7 +840,7 @@
       if (!perfLine) miss.push("**Performance = None**");
       if (!atmLine) miss.push("**Atmosphere = None**");
       if (!consLine) miss.push("**Constraints = None**");
-      beatIntroSecond = `Keep **one** continuous beat: ${idKeep}, **identical** place and environment, **identical** ${have.join(", ")} as in the shared blocks (${miss.join("; ")}—for omitted rows, follow **priority scene beats**${includeFigureLock || includeEnvironmentLock ? " and locks" : " and **(use attached image)** identity tags"} only). **Do not** invent new story beats, time jumps, costume changes, or location changes between scenes.`;
+      beatIntroSecond = `Keep **one** continuous beat: ${idKeep}, **identical** place and environment, **identical** ${have.join(", ")} as in the shared blocks (${miss.join("; ")}—for omitted rows, follow **priority scene beats**${includeFigureLock || includeEnvironmentLock ? " and locks" : mode === "none" ? " only" : " and image-role identity tags"} only). **Do not** invent new story beats, time jumps, costume changes, or location changes between scenes.`;
     }
 
     const lines = [
@@ -724,12 +869,14 @@
       `Produce **exactly ${n}** consecutive scenes. Do **not** output a Narration line, Hindi text, or audio script.`,
       "",
     ];
+    lines.push(...prompt3ImageReferenceSection(useImagesMode, referenceCameraTitle));
     lines.push(
       ...prompt3AttachedImageIdentitySection(
         figureLabels,
         backgroundSelection,
         includeFigureLock,
-        includeEnvironmentLock
+        includeEnvironmentLock,
+        useImagesMode
       )
     );
 
@@ -743,7 +890,9 @@
           ? [
               includeEnvironmentLock
                 ? "**Atmosphere = None** — infer light, sky, and mood from the **environment lock** and this block, not a fixed atmosphere preset."
-                : "**Atmosphere = None** — infer light, sky, and mood from **(use attached image)** environment tags and this block, not a fixed atmosphere preset.",
+                : mode === "none"
+                  ? "**Atmosphere = None** — infer light, sky, and mood from this block and beats, not a fixed atmosphere preset."
+                  : "**Atmosphere = None** — infer light, sky, and mood from image-role environment tags and this block, not a fixed atmosphere preset.",
             ]
           : []),
         ...(!consLine
@@ -758,6 +907,7 @@
           hasGods: includeFigureLock ? godList.length > 0 : (figureLabels || []).length > 0,
           figureLabels,
           backgroundSelection,
+          useImagesMode,
         }),
         "",
         priorityRaw,
@@ -806,7 +956,9 @@
         ? [
             includeEnvironmentLock
               ? "- **Atmosphere** is **None** — do **not** force a default lighting/mood template; keep sky, weather, and light coherent with the **environment lock** in every paragraph."
-              : "- **Atmosphere** is **None** — do **not** force a default lighting/mood template; keep sky, weather, and light implied only via **(use attached image)** environment tags in every paragraph.",
+              : mode === "none"
+                ? "- **Atmosphere** is **None** — do **not** force a default lighting/mood template; infer from beats in every paragraph."
+                : "- **Atmosphere** is **None** — do **not** force a default lighting/mood template; keep sky, weather, and light implied via image-role environment tags in every paragraph.",
           ]
         : []),
       ...(!consLine
@@ -884,7 +1036,7 @@
     const matchSharedLine =
       matchDims.length > 0
         ? `- Matches ${matchDims.join(", ")}, and **video style** from the shared blocks.`
-        : `- Matches **video style** from the shared blocks only (**Performance**, **Atmosphere**, and **Constraints** are **None** — use ${includeFigureLock || includeEnvironmentLock ? "locks and beats" : "(use attached image) identity tags and beats"} for the rest).`;
+        : `- Matches **video style** from the shared blocks only (**Performance**, **Atmosphere**, and **Constraints** are **None** — use ${includeFigureLock || includeEnvironmentLock ? "locks and beats" : mode === "none" ? "beats only (text-only)" : "image-role identity tags and beats"} for the rest).`;
 
     lines.push(
       "=== WHAT TO WRITE ===",
@@ -894,12 +1046,14 @@
         : godList.length && includeEnvironmentLock
           ? "- **Embeds** the Character and Environment locks with high fidelity, including **verbatim** hard-limit phrases from the locks and beats when present (*strictly*, *exactly*, *only one*, etc.)."
           : godList.length
-            ? "- **Embeds** the Character lock with high fidelity, including **verbatim** hard-limit phrases from the locks and beats when present (*strictly*, *exactly*, *only one*, etc.). **Place** uses **(use attached image)** environment tag in every scene."
+            ? `- **Embeds** the Character lock with high fidelity, including **verbatim** hard-limit phrases from the locks and beats when present (*strictly*, *exactly*, *only one*, etc.). ${mode === "none" ? "**Place** from environment lock or beats." : "**Place** uses environment image-role tag in every scene."}`
             : includeEnvironmentLock
               ? "- **Embeds** the Environment lock with high fidelity, including **verbatim** hard-limit phrases from that lock and beats when present (*strictly*, *exactly*, *only one*, etc.). Character staging follows **priority beats**."
-              : attachedPhrases.length
-                ? `- **Every** scene paragraph **must include verbatim**: ${attachedPhrases.map((p) => `\`${p}\``).join(", ")}. No detailed look prose for those tags; **priority beats** define motion.`
-                : "- Every scene includes **(use attached image)** for figure and environment; **priority beats** define motion.",
+              : mode === "none"
+                ? "- **Text-only** in every scene: self-contained prose from **priority beats**; no image references."
+                : attachedPhrases.length
+                  ? `- **Every** scene paragraph **must include verbatim**: ${attachedPhrases.map((p) => `\`${p}\``).join(", ")}. No detailed look prose for those tags; **priority beats** define motion. Same image references for all scenes—only camera framing changes.`
+                  : "- Every scene follows **IMAGE REFERENCES**; **priority beats** define motion. Same image references for all scenes—only camera framing changes.",
       ...(multiFig
         ? [
             "- **Each** named figure is a **separate, complete** body in the text (own limbs, own species/anatomy per lock). **Do not** merge or fuse two character locks into one hybrid being; **do not** attach one figure’s hands, arms, or face to another’s body.",
@@ -914,7 +1068,9 @@
           ? "- Same action / emotional beat as the others; **no** new plot, props, or characters beyond what **locks** and **priority beats** name."
           : includeEnvironmentLock
             ? "- Same action / emotional beat as the others; **no** new plot or props beyond what **priority beats** and the environment lock imply."
-            : "- Same action / emotional beat as the others; **no** new plot or props beyond what **priority beats** and the **(use attached image)** identity tags imply.",
+            : mode === "none"
+              ? "- Same action / emotional beat as the others; **no** new plot or props beyond what **priority beats** imply."
+              : "- Same action / emotional beat as the others; **no** new plot or props beyond what **priority beats** and image-role identity tags imply.",
       "",
       "Reply with **only** the scene blocks from `Scene 1:` through the end of Scene " +
         String(n) +

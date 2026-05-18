@@ -480,11 +480,82 @@
       "p3-include-figure-lock": document.getElementById("p3-include-figure-lock")?.checked === true,
       "p3-include-environment-lock":
         document.getElementById("p3-include-environment-lock")?.checked === true,
+      "p3-use-images-mode": getUseImagesMode(),
     };
+  }
+
+  const P3_USE_IMAGES_MODES = ["none", "one", "first_last", "all_three"];
+  /** Source of truth — DOM :checked alone is unreliable after blur / outside clicks. */
+  let currentUseImagesMode = "one";
+
+  function normalizeUseImagesModeValue(mode) {
+    const v = String(mode ?? "").trim();
+    return P3_USE_IMAGES_MODES.includes(v) ? v : "one";
+  }
+
+  function applyUseImagesMode(mode) {
+    const want = normalizeUseImagesModeValue(mode);
+    currentUseImagesMode = want;
+    const radios = [...document.querySelectorAll('input[name="p3-use-images-mode"]')];
+    if (!radios.length) return want;
+    for (const rb of radios) rb.checked = rb.value === want;
+    if (!radios.some((rb) => rb.checked)) {
+      const fallback = radios.find((rb) => rb.value === "one");
+      if (fallback) fallback.checked = true;
+    }
+    return want;
+  }
+
+  function getUseImagesMode() {
+    return currentUseImagesMode;
+  }
+
+  function readUseImagesModeFromDom() {
+    const checked = document.querySelector('input[name="p3-use-images-mode"]:checked');
+    const v = String(checked?.value || "").trim();
+    return P3_USE_IMAGES_MODES.includes(v) ? v : null;
+  }
+
+  function syncUseImagesModeToDom() {
+    if (isApplyingEditingState) return;
+    const dom = readUseImagesModeFromDom();
+    if (dom === currentUseImagesMode) return;
+    applyUseImagesMode(currentUseImagesMode);
+  }
+
+  function onUseImagesModePick(ev) {
+    if (isApplyingEditingState) return;
+    const rb = ev.target;
+    if (!rb || rb.name !== "p3-use-images-mode" || rb.type !== "radio") return;
+    if (!P3_USE_IMAGES_MODES.includes(rb.value)) return;
+    currentUseImagesMode = rb.value;
+    for (const r of document.querySelectorAll('input[name="p3-use-images-mode"]')) {
+      r.checked = r.value === currentUseImagesMode;
+    }
+    persistEditingState();
+  }
+
+  function wireUseImagesModeRadios() {
+    const fieldset = document.querySelector(".video-use-images");
+    document.querySelectorAll('input[name="p3-use-images-mode"]').forEach((rb) => {
+      if (rb.dataset.editingStateWired === "1") return;
+      rb.dataset.editingStateWired = "1";
+      rb.addEventListener("change", onUseImagesModePick);
+    });
+    if (fieldset && fieldset.dataset.useImagesBlurWired !== "1") {
+      fieldset.dataset.useImagesBlurWired = "1";
+      fieldset.addEventListener("focusout", (ev) => {
+        if (isApplyingEditingState) return;
+        const next = ev.relatedTarget;
+        if (next && fieldset.contains(next)) return;
+        window.setTimeout(syncUseImagesModeToDom, 0);
+      });
+    }
   }
 
   function persistEditingState() {
     if (isApplyingEditingState) return;
+    syncUseImagesModeToDom();
     saveEditingState({
       v: 1,
       updatedAt: new Date().toISOString(),
@@ -562,6 +633,13 @@
       if (figureLockCb) figureLockCb.checked = fields["p3-include-figure-lock"] === true;
       const envLockCb = document.getElementById("p3-include-environment-lock");
       if (envLockCb) envLockCb.checked = fields["p3-include-environment-lock"] === true;
+
+      const hasImgMode = Object.prototype.hasOwnProperty.call(fields, "p3-use-images-mode");
+      const imgMode = hasImgMode
+        ? normalizeUseImagesModeValue(fields["p3-use-images-mode"])
+        : "one";
+      applyUseImagesMode(imgMode);
+      syncUseImagesModeToDom();
     } finally {
       isApplyingEditingState = false;
     }
@@ -598,6 +676,7 @@
       rowsHost.addEventListener("input", persistEditingState);
       rowsHost.addEventListener("click", () => window.setTimeout(persistEditingState, 0));
     }
+    wireUseImagesModeRadios();
   }
 
   function findGod(godId) {
@@ -1429,6 +1508,7 @@
       includeFigureLock: document.getElementById("p3-include-figure-lock")?.checked === true,
       includeEnvironmentLock:
         document.getElementById("p3-include-environment-lock")?.checked === true,
+      useImagesMode: getUseImagesMode(),
       gods: collectGods(),
       figureLabels: collectFigureLabels(),
       background: collectBackground(),
@@ -2093,6 +2173,10 @@
     populatePriorityPresets();
     wirePriorityControlsOnce();
     applyEditingState();
+    wireUseImagesModeRadios();
+    if (!readUseImagesModeFromDom()) {
+      applyUseImagesMode(currentUseImagesMode);
+    }
     wireEditingStateAutosave();
     wireMainPageTextareas();
   }
